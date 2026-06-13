@@ -1,0 +1,65 @@
+.footer {
+  margin-top: 6rem;
+  border-top: 1px solid color-mix(in oklab, var(--ink) 15%, transparent);
+  padding: 3rem clamp(1.5rem, 4vw, 4rem) 4rem;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  position: relative;
+  z-index: 1;
+}
+
+.inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 2rem;
+}
+
+.footer h4 {
+  font-family: var(--ff-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 0.8rem;
+  font-weight: 500;
+}
+
+.footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer li {
+  padding: 0.18rem 0;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  text-decoration: none;
+}
+
+.linkBtn:hover {
+  color: var(--ink);
+  border-bottom-color: currentColor;
+}
+
+.sig {
+  font-family: var(--ff-hand);
+  font-size: 1.3rem;
+  color: var(--warm-deep);
+}
+
+@media (max-width: 760px) {
+  .inner {
+    grid-template-columns: 1fr;
+  }
+}

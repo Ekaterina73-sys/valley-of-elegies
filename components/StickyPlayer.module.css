@@ -1,0 +1,283 @@
+.player {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 150;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1.1fr) minmax(0, 1.7fr) auto auto;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.4rem);
+  padding: 0.7rem clamp(0.9rem, 3vw, 2rem);
+  background: color-mix(in oklab, var(--paper) 86%, var(--paper-deep));
+  border-top: 1px solid color-mix(in oklab, var(--warm-deep) 38%, transparent);
+  box-shadow:
+    0 -10px 30px -16px rgba(46,42,30,0.5),
+    inset 0 1px 0 rgba(255,250,235,0.5);
+  transform: translateY(110%);
+  transition: transform 0.6s cubic-bezier(.5,.05,.15,1);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.player[data-show="1"] { transform: translateY(0); }
+.player::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--warm-deep) 14%, transparent), transparent 18%);
+  opacity: 0.6;
+}
+
+/* Gold variant */
+.playerGold {
+  border-top-color: color-mix(in oklab, #a9863f 50%, transparent);
+}
+
+/* Пластинка */
+.disc {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle at 50% 50%, #1a1712 0 1.4px, #2e2a1e 1.4px 2.6px);
+  box-shadow: 0 3px 10px -3px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.04);
+  animation: kbSpin 3.4s linear infinite;
+  animation-play-state: paused;
+}
+.player[data-playing="1"] .disc { animation-play-state: running; }
+.disc::after {
+  content: '';
+  position: absolute;
+  inset: 35%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, color-mix(in oklab, var(--warm) 80%, white), var(--warm-deep));
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
+}
+.disc::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: var(--paper);
+  z-index: 2;
+}
+.discGold::after {
+  background: radial-gradient(circle at 38% 34%, #e8cd8a, #a9863f);
+}
+@keyframes kbSpin { to { transform: rotate(360deg); } }
+
+/* Левая зона */
+.lead {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  transition: transform 0.3s cubic-bezier(.4,.2,.2,1), background 0.3s;
+  box-shadow: 0 5px 14px -6px rgba(46,42,30,0.5);
+}
+.btn:hover { transform: scale(1.08); }
+
+.playBtn {
+  width: 44px;
+  height: 44px;
+}
+.playBtnGold { background: #8a6a3e; }
+
+.stepBtn {
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  color: var(--ink-soft);
+  box-shadow: none;
+}
+.stepBtn:hover {
+  color: var(--ink);
+  background: color-mix(in oklab, var(--ink) 8%, transparent);
+  transform: none;
+}
+
+/* Meta */
+.meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.kind {
+  font-family: var(--ff-hand);
+  font-size: 0.98rem;
+  line-height: 1;
+  color: var(--warm-deep);
+}
+.kindGold { color: #a9863f; }
+.name {
+  font-family: 'Bogart', var(--ff-display);
+  font-weight: 700;
+  font-size: 1.06rem;
+  line-height: 1.15;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Прогресс */
+.scrubWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+.time {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.scrub {
+  position: relative;
+  flex: 1;
+  min-width: 60px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  touch-action: none;
+}
+.rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--ink) 16%, transparent);
+}
+.fill {
+  position: absolute;
+  left: 0;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--warm-deep);
+}
+.fillGold { background: #a9863f; }
+.knob {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1.5px solid var(--warm-deep);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 6px -1px rgba(46,42,30,0.35);
+}
+.knobGold { border-color: #a9863f; }
+
+/* Правая зона */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.openBtn {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--ff-display);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid transparent;
+  transition: color 0.3s, border-color 0.3s;
+}
+.openBtn:hover {
+  color: var(--ink);
+  border-bottom-color: currentColor;
+}
+
+.iconBtn {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-soft);
+  padding: 0.4rem;
+  display: inline-flex;
+  border-radius: 50%;
+  transition: color 0.3s, background 0.3s;
+}
+.iconBtn:hover {
+  color: var(--ink);
+  background: color-mix(in oklab, var(--ink) 8%, transparent);
+}
+
+.volWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.volPop {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: -4px;
+  background: var(--paper);
+  padding: 0.7rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px -12px rgba(46,42,30,0.5);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.volPopOpen {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.volPop input {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 6px;
+  height: 80px;
+  accent-color: var(--warm-deep);
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .player {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: 'lead meta actions' 'scrub scrub scrub';
+    row-gap: 0.5rem;
+  }
+  .lead { grid-area: lead; }
+  .meta { grid-area: meta; }
+  .scrubWrap { grid-area: scrub; }
+  .actions { grid-area: actions; }
+  .openBtn, .stepBtn { display: none; }
+}

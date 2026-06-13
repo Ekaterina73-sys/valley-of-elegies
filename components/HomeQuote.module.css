@@ -1,0 +1,93 @@
+.quote {
+  margin-top: 7rem;
+  text-align: center;
+}
+
+/* ─── До появления в зоне видимости — всё невидимо ─── */
+.flourishTop,
+.author,
+.flourishBottom {
+  opacity: 0;
+}
+
+/* Буквы цитаты — каждая скрыта до .visible */
+.text [data-qletter] {
+  opacity: 0;
+}
+
+/* ─── После добавления .visible через IntersectionObserver ─── */
+
+/* Флорали раскрываются от центра */
+.visible .flourishTop,
+.visible .flourishBottom {
+  animation: kbQuoteFlourish 2.6s cubic-bezier(0.16, 1, 0.3, 1) 0s both;
+}
+
+/* Буква за буквой, задержка через --ld */
+.visible .text [data-qletter] {
+  animation: kbQuoteLetterIn 0.7s ease-out var(--ld) both;
+}
+
+/* Подпись: появляется когда последняя буква цитаты уже видна */
+/* 75 букв × 28 мс + 700 мс анимации ≈ 2.8 с */
+.visible .author {
+  animation: kbQuoteAuthor 1.1s cubic-bezier(0.16, 1, 0.3, 1) 2.8s both;
+}
+
+/* ─── Keyframes ─── */
+
+/* Флорали раскрываются от центра (scaleX 0.4 → 1) + лёгкое проявление */
+@keyframes kbQuoteFlourish {
+  from {
+    opacity: 0;
+    transform: scaleX(0.4);
+    filter: blur(1px);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+    filter: blur(0);
+  }
+}
+
+/* Буква: проявляется из лёгкого тумана */
+@keyframes kbQuoteLetterIn {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* Подпись: чистое проявление снизу */
+@keyframes kbQuoteAuthor {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Стили элементов ─── */
+
+.text {
+  font-family: var(--ff-display);
+  font-style: italic;
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  line-height: 1.35;
+  color: var(--ink);
+  margin: 1.5rem 0;
+}
+
+.author {
+  font-size: 1.4rem;
+}

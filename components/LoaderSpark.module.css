@@ -1,0 +1,70 @@
+/* ─── Загрузочный экран ─── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: var(--paper);
+  pointer-events: none;
+}
+
+.overlayFading {
+  opacity: 0;
+  transition: opacity 1s ease-out;
+}
+
+/* ✦ В центре экрана */
+.spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* Начальное состояние: крошечная, невидимая */
+  transform: translate(-50%, -50%) scale(0.15);
+  opacity: 0;
+  color: #C4A44A;
+  font-size: 3.5rem;   /* Крупнее — это центральный символ загрузки */
+  font-family: var(--ff-display, 'Cormorant Garamond', Georgia, serif);
+  font-weight: 400;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  will-change: transform, opacity, text-shadow;
+  /* Такт 1: медленное зарождение */
+  transition:
+    transform   1.4s cubic-bezier(0.12, 0.82, 0.12, 1),
+    opacity     1.4s ease-out,
+    text-shadow 1.4s ease-out;
+}
+
+/* Разгорелась — добавляется через JS */
+.sparkLit {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  text-shadow:
+    0 0 20px rgba(196, 164, 74, 1.0),
+    0 0 42px rgba(196, 164, 74, 0.65),
+    0 0 84px rgba(196, 164, 74, 0.35),
+    0 0 140px rgba(196, 164, 74, 0.12);
+}
+
+/* Дыхание — добавляется через JS после завершения зарождения.
+   Плавно пульсирует: яркий → dim → яркий, пока страница грузится. */
+.sparkBreathing {
+  animation: kbSparkBreathe 2.4s ease-in-out infinite;
+}
+
+@keyframes kbSparkBreathe {
+  0%, 100% {
+    opacity: 1;
+    text-shadow:
+      0 0 20px rgba(196, 164, 74, 0.95),
+      0 0 42px rgba(196, 164, 74, 0.60),
+      0 0 84px rgba(196, 164, 74, 0.30);
+  }
+  50% {
+    opacity: 0.45;
+    text-shadow:
+      0 0 10px rgba(196, 164, 74, 0.35),
+      0 0 22px rgba(196, 164, 74, 0.16);
+  }
+}

@@ -1,0 +1,324 @@
+@keyframes kbCardIn {
+  from { opacity: 0; translate: 0 16px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+/* Card grid */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(1.5rem, 2.4vw, 2.4rem);
+  perspective: 1200px;
+  perspective-origin: 50% 30%;
+}
+
+/* Card wrapper */
+.card {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  aspect-ratio: 3 / 4;
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transform:
+    perspective(900px)
+    rotateX(var(--rx, 0deg))
+    rotateY(var(--ry, 0deg))
+    translateZ(0);
+  animation: kbCardIn 1.0s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: transform .55s cubic-bezier(.2,.7,.2,1);
+}
+
+.card.tilting {
+  transition: transform .08s linear;
+}
+
+/* Shadow base */
+.card::before {
+  content: '';
+  position: absolute;
+  left: 6%; right: 6%; bottom: -6px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(46,42,30,0.28), transparent 70%);
+  filter: blur(6px);
+  opacity: 0.55;
+  transform: translateZ(-1px);
+  transition: opacity .4s, transform .55s;
+}
+
+.card:hover::before {
+  opacity: 0.8;
+  bottom: -10px;
+}
+
+/* Concave-corner card body */
+.cardFrame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #F5F0E3;
+  -webkit-mask: var(--kb-card-mask) center/100% 100% no-repeat;
+          mask: var(--kb-card-mask) center/100% 100% no-repeat;
+  overflow: hidden;
+}
+
+/* Inner golden line */
+.cardLine {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  color: #B8A572;
+}
+
+.cardLine path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.85;
+}
+
+/* Glare */
+.glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(255, 250, 230, 0.55),
+    transparent 42%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity .35s;
+}
+
+.card:hover .glare {
+  opacity: 1;
+}
+
+/* Inner content */
+.cardInner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: clamp(1.1rem, 1.5vw, 1.4rem);
+}
+
+/* Character card: separate rows for image and name so circle height is constant */
+.cardInnerChar {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  padding: clamp(1.1rem, 1.5vw, 1.4rem);
+}
+
+.imageCircle {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fix: reserve same vertical space for any name length so 1fr stays equal */
+.cardInnerChar .name {
+  min-height: 2.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* World card tab */
+.tab {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  background: #F5F0E3;
+  color: #5a4632;
+  font-family: 'Cormorant SC', 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.9rem 0.18rem;
+  border: 1px solid #B8A572;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  line-height: 1;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset;
+  white-space: nowrap;
+}
+
+.tab i {
+  font-style: normal;
+  color: #8a6a3e;
+  font-size: 0.85em;
+}
+
+/* Eyebrow */
+.eyebrow {
+  font-family: 'Cormorant SC', 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.92rem;
+  letter-spacing: 0.2em;
+  color: #6a5a3a;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Vignette at card bottom */
+.cardQuote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0 0.6rem 0.6rem;
+}
+
+.cardQuoteRule {
+  height: 1px;
+  flex: 0 1 clamp(22px, 28%, 62px);
+  background: linear-gradient(90deg, transparent, rgba(176, 140, 56, 0.65));
+}
+
+.cardQuoteRule:last-child {
+  background: linear-gradient(90deg, rgba(176, 140, 56, 0.65), transparent);
+}
+
+.cardQuoteGlyph {
+  flex: 0 0 auto;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: rgba(176, 140, 56, 0.82);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Center block */
+.center {
+  align-self: center;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.4rem 0;
+}
+
+/* Vignette placeholder */
+.vignette {
+  width: 50%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(138, 106, 62, 0.55);
+  border-radius: 50%;
+  color: #8a6a3e;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-align: center;
+  padding: 0.4rem;
+  background: rgba(138, 106, 62, 0.04);
+}
+
+/* Name */
+.name {
+  font-family: 'Bogart', 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(1.35rem, 1.8vw, 1.7rem);
+  color: #2e2a1e;
+  line-height: 1.05;
+  letter-spacing: -0.005em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* Role */
+.role {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: #5a4632;
+  line-height: 1.2;
+  margin: 0;
+  max-width: 22ch;
+}
+
+/* Ornament */
+.orn {
+  align-self: end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 0 0.6rem 0.35rem;
+}
+
+.ornRule {
+  height: 1px;
+  flex: 0 1 clamp(24px, 24%, 58px);
+  background: linear-gradient(90deg, transparent, #8a6a3e);
+  opacity: 0.75;
+}
+
+.ornRule:last-child {
+  background: linear-gradient(90deg, #8a6a3e, transparent);
+}
+
+.ornGlyph {
+  flex: 0 0 auto;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: #8a6a3e;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Touch: no tilt */
+@media (hover: none), (pointer: coarse) {
+  .card,
+  .card:hover {
+    transform: none !important;
+    transition: none;
+  }
+  .glare { display: none; }
+  .card:hover::before { opacity: 0.55; bottom: -6px; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; transition: none; transform: none !important; }
+}
+
+@media (max-width: 560px) {
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+  }
+  .card {
+    aspect-ratio: 5 / 7;
+    max-width: 340px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .name { font-size: 1.55rem; }
+  .role { font-size: 1.05rem; max-width: 26ch; }
+  .eyebrow { font-size: 1.2rem; letter-spacing: 0.18em; }
+  .cardQuote {
+    padding-bottom: 0.7rem;
+  }
+}

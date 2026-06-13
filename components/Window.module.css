@@ -1,0 +1,348 @@
+.stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.win3d {
+  perspective: 1300px;
+  perspective-origin: 50% 44%;
+  position: relative;
+  width: min(42vw, calc((100vh - 13rem) / 1.46), 540px);
+  flex: none;
+  transition: filter 0.7s ease-out;
+}
+
+/* Тёплое свечение и движение — только на устройствах с настоящим ховером */
+@media (hover: hover) and (pointer: fine) {
+  .win3d:has(.casement:not(.casementAjar):hover) {
+    filter:
+      drop-shadow(0 0 36px rgba(196, 164, 74, 0.16))
+      drop-shadow(0 14px 32px rgba(46, 42, 30, 0.38));
+  }
+}
+@media (max-width: 980px) {
+  .win3d {
+    width: min(82vw, calc((100svh - 14rem) / 1.34), 400px);
+  }
+}
+
+.casement {
+  position: relative;
+  aspect-ratio: 100 / 146;
+  padding: 26px;
+  border-radius: 4px 3px 4px 3px;
+  background: linear-gradient(180deg, #5e4128 0%, #432d1a 60%, #34230f 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 224, 184, 0.28),
+    inset 0 -4px 14px rgba(0, 0, 0, 0.5),
+    inset 3px 0 8px rgba(0, 0, 0, 0.3),
+    inset -3px 0 8px rgba(0, 0, 0, 0.3),
+    0 22px 48px -18px rgba(46, 42, 30, 0.55),
+    0 6px 18px -8px rgba(46, 42, 30, 0.3);
+  cursor: pointer;
+  user-select: none;
+}
+.casement::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    repeating-linear-gradient(91deg,
+      rgba(0,0,0,0.10) 0 1px, transparent 1px 7px,
+      rgba(255,220,180,0.05) 7px 8px, transparent 8px 19px,
+      rgba(0,0,0,0.07) 19px 20px, transparent 20px 30px);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.casement::after {
+  content: '';
+  position: absolute;
+  inset: 22px;
+  border-radius: 2px;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(0,0,0,0.5),
+    inset 0 3px 10px rgba(0,0,0,0.55),
+    inset 0 -1px 0 rgba(255,224,184,0.12);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.opening {
+  position: absolute;
+  inset: 26px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #14110c;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center center;
+  transform: scale(1.06);
+  /* filter: долгое проявление из тумана; задержка — сначала рамка, потом пейзаж */
+  transition: opacity 1.4s ease, filter 2.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
+}
+.sceneDay { background-image: var(--scene-day); opacity: 1; }
+.sceneNight { background-image: var(--scene-night); opacity: 0; }
+:global(html.tod-night) .sceneDay   { opacity: 0; }
+:global(html.tod-night) .sceneNight { opacity: 1; }
+
+/* Лёгкий расфокус во время загрузки → плавно убирается при появлении */
+:global(body:not(.kb-intro-ready)) .scene {
+  filter: blur(6px);
+}
+:global(body.kb-intro-ready) .scene {
+  filter: blur(0);
+}
+
+.opening::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow:
+    inset 0 0 50px rgba(20, 14, 8, 0.5),
+    inset 0 0 0 1px rgba(0,0,0,0.4);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.sceneSun {
+  position: absolute;
+  top: -12%;
+  left: 12%;
+  width: 30%;
+  height: 130%;
+  background: linear-gradient(to bottom,
+    transparent 4%,
+    rgba(255, 242, 196, 0.40) 36%,
+    rgba(255, 242, 196, 0.14) 70%,
+    transparent 100%);
+  filter: blur(8px);
+  transform: skewX(-20deg);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 1.2s ease;
+}
+:global(html.tod-night) .sceneSun { opacity: 0; }
+
+/* Светлячки */
+.firefly {
+  display: none;
+}
+:global(html.tod-night) .firefly {
+  display: block;
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff5c0 0%, #f4d27a 35%, rgba(244, 210, 122, 0) 70%);
+  box-shadow: 0 0 10px 2px rgba(255, 220, 140, 0.55), 0 0 20px 6px rgba(255, 220, 140, 0.22);
+  filter: blur(0.4px);
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.firefly0 { left: 14%; top: 60%; animation: ff0 34s ease-in-out infinite, ffb 7.5s ease-in-out infinite; animation-delay: -2s, -1s; }
+.firefly1 { left: 68%; top: 50%; animation: ff1 42s ease-in-out infinite, ffb 9s ease-in-out infinite; animation-delay: -12s, -3s; }
+.firefly2 { left: 40%; top: 30%; animation: ff2 38s ease-in-out infinite, ffb 8s ease-in-out infinite; animation-delay: -7s, -5s; }
+.firefly3 { left: 80%; top: 74%; animation: ff3 46s ease-in-out infinite, ffb 11s ease-in-out infinite; animation-delay: -20s, -2s; }
+.firefly4 { left: 26%; top: 82%; animation: ff4 40s ease-in-out infinite, ffb 10s ease-in-out infinite; animation-delay: -15s, -7s; }
+
+@keyframes ff0 { 0%{transform:translate(0,0)} 22%{transform:translate(34px,-20px)} 48%{transform:translate(64px,8px)} 71%{transform:translate(38px,-16px)} 100%{transform:translate(0,0)} }
+@keyframes ff1 { 0%{transform:translate(0,0)} 25%{transform:translate(-28px,22px)} 55%{transform:translate(-52px,-14px)} 78%{transform:translate(-22px,12px)} 100%{transform:translate(0,0)} }
+@keyframes ff2 { 0%{transform:translate(0,0)} 30%{transform:translate(36px,34px)} 55%{transform:translate(6px,54px)} 80%{transform:translate(-26px,28px)} 100%{transform:translate(0,0)} }
+@keyframes ff3 { 0%{transform:translate(0,0)} 28%{transform:translate(-40px,-34px)} 60%{transform:translate(-64px,-8px)} 82%{transform:translate(-26px,-24px)} 100%{transform:translate(0,0)} }
+@keyframes ff4 { 0%{transform:translate(0,0)} 22%{transform:translate(30px,-30px)} 52%{transform:translate(58px,-8px)} 78%{transform:translate(26px,-38px)} 100%{transform:translate(0,0)} }
+@keyframes ffb { 0%,100%{opacity:0.22} 12%{opacity:0.85} 25%{opacity:0.38} 50%{opacity:0.70} 72%{opacity:0.30} 85%{opacity:0.55} }
+
+/* Sashes */
+.sashes {
+  position: absolute;
+  inset: 24px;
+  transform-style: preserve-3d;
+  z-index: 3;
+}
+.sash {
+  --wd: #2f1f12;
+  --wm: #523622;
+  --wl: #7c5230;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 1.3s cubic-bezier(0.4, 0, 0.1, 1);
+}
+.sashLeft  { left: 0; transform-origin: left center; }
+.sashRight { right: 0; transform-origin: right center; }
+
+.sash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.3s cubic-bezier(0.4, 0, 0.1, 1);
+}
+.sashLeft::after  { background: linear-gradient(90deg, rgba(8,6,3,0) 28%, rgba(8,6,3,0.58) 100%); }
+.sashRight::after { background: linear-gradient(90deg, rgba(8,6,3,0) 30%, rgba(8,6,3,0.52) 100%); }
+
+.casementAjar .sashRight { transform: rotateY(-30deg); }
+.casementAjar .sashRight::after { opacity: 1; }
+
+/* Ховер: только мышь/трекпад — предотвращает артефакты на тач-экранах */
+@media (hover: hover) and (pointer: fine) {
+  .casement:not(.casementAjar):hover .sashRight {
+    transform: rotateY(-9deg);
+    transition-duration: 0.55s;
+  }
+  .casement:not(.casementAjar):hover .sashRight::after {
+    opacity: 0.28;
+    transition-duration: 0.55s;
+  }
+  .win3d:has(.casement:not(.casementAjar):hover) .hint:not(.hintHidden) {
+    opacity: 0.95 !important;
+    transition: opacity 0.4s ease-out;
+  }
+}
+
+.sashGlass {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 18%, transparent 42%, transparent 70%, rgba(255,255,255,0.05) 88%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 2;
+}
+.sashRight .sashGlass {
+  background: linear-gradient(235deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 18%, transparent 44%);
+}
+
+.rail, .muntin {
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+}
+.railOuter, .railInner, .muntinV {
+  top: 0; bottom: 0;
+  background: linear-gradient(90deg, var(--wd) 0%, var(--wm) 28%, var(--wl) 50%, var(--wm) 72%, var(--wd) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,224,184,0.22),
+    inset 0 -2px 4px rgba(0,0,0,0.3),
+    1px 0 3px rgba(0,0,0,0.4),
+    -1px 0 3px rgba(0,0,0,0.4);
+}
+.railTop, .railBottom, .muntinH {
+  left: 0; right: 0;
+  background: linear-gradient(180deg, var(--wl) 0%, var(--wm) 45%, var(--wd) 100%);
+  box-shadow:
+    inset 1px 0 0 rgba(255,224,184,0.18),
+    inset 0 -1px 3px rgba(0,0,0,0.35),
+    0 1px 3px rgba(0,0,0,0.4),
+    0 -1px 3px rgba(0,0,0,0.35);
+}
+.railTop    { top: 0; height: 11px; }
+.railBottom { bottom: 0; height: 11px; }
+.railOuter  { width: 11px; }
+.railInner  { width: 13px; }
+.sashLeft .railOuter { left: 0; }
+.sashLeft .railInner { right: 0; }
+.sashRight .railOuter { right: 0; }
+.sashRight .railInner { left: 0; }
+.muntinV { left: 50%; width: 8px; transform: translateX(-50%); top: 11px; bottom: 11px; }
+.muntinH { height: 8px; }
+.muntinH1 { top: calc(33.33% - 4px); }
+.muntinH2 { top: calc(66.66% - 4px); }
+
+.handle {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 54px;
+  transform: translateY(-50%);
+  z-index: 4;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #6e5018 0%, #b88e3e 28%, #f0d589 50%, #a87e30 74%, #4e3a14 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,240,200,0.6),
+    inset 0 -1px 0 rgba(0,0,0,0.45),
+    0 2px 5px rgba(0,0,0,0.45);
+}
+.sashLeft .handle { right: 4px; }
+.sashRight .handle { left: 4px; }
+
+/* Подоконник */
+.sill {
+  position: relative;
+  margin: -3px -16px 0;
+  height: 30px;
+  border-radius: 0 0 5px 5px;
+  background: linear-gradient(180deg, #6a4c2c 0%, #4e361f 30%, #38260f 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255,224,184,0.32),
+    inset 0 -2px 5px rgba(0,0,0,0.5),
+    0 16px 26px -12px rgba(46,42,30,0.5),
+    0 4px 10px -2px rgba(46,42,30,0.3);
+  overflow: hidden;
+  z-index: 6;
+}
+.sill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg,
+    rgba(0,0,0,0.08) 0 1px, transparent 1px 16px,
+    rgba(255,220,180,0.05) 16px 17px, transparent 17px 30px);
+  mix-blend-mode: multiply;
+}
+
+.hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2.6rem;
+  text-align: center;
+  font-family: var(--ff-hand);
+  font-size: 1.05rem;
+  color: var(--warm-deep);
+  opacity: 0;
+  pointer-events: none;
+  animation: hintIn 1s ease-out 1.4s forwards;
+}
+.hintHidden { opacity: 0 !important; animation: none; }
+@keyframes hintIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 0.72; transform: translateY(0); }
+}
+
+/* Мобилка: нет ховера — окно «дышит», намекая на интерактивность */
+@media (max-width: 980px) and (prefers-reduced-motion: no-preference) {
+  .casement:not(.casementAjar) .sashRight {
+    animation: breatheR 7s ease-in-out 1.8s infinite;
+  }
+  /* Синхронное тёплое свечение — пульсирует вместе со створкой */
+  .win3d:has(.casement:not(.casementAjar)) {
+    animation: breatheGlow 7s ease-in-out 1.8s infinite;
+  }
+}
+
+@keyframes breatheR {
+  0%, 68%, 100% { transform: rotateY(0deg); }
+  82%           { transform: rotateY(-8deg); }
+}
+
+@keyframes breatheGlow {
+  0%, 68%, 100% { filter: none; }
+  82% {
+    filter:
+      drop-shadow(0 0 22px rgba(196, 164, 74, 0.14))
+      drop-shadow(0 10px 22px rgba(46, 42, 30, 0.32));
+  }
+}

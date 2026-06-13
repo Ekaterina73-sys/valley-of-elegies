@@ -1,0 +1,262 @@
+.compact {
+  --_fg: var(--paper);
+  --_muted: color-mix(in oklab, var(--paper) 52%, transparent);
+  --scrub-track: color-mix(in oklab, var(--paper) 32%, transparent);
+
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1.1rem 0.85rem 0.75rem;
+  background: var(--ink);
+  color: var(--_fg);
+  border: 1px solid color-mix(in oklab, var(--ink) 70%, transparent);
+  border-radius: 999px;
+  box-shadow: 0 4px 12px -6px rgba(46, 42, 30, 0.4);
+  transition: background 0.4s, border-color 0.4s, box-shadow 0.4s;
+}
+.compact:hover {
+  border-color: color-mix(in oklab, var(--warm) 62%, transparent);
+}
+
+:global(html.tod-night) .compact {
+  --_fg: var(--paper-deep);
+  --_muted: color-mix(in oklab, var(--paper-deep) 50%, transparent);
+  --scrub-track: color-mix(in oklab, var(--ink) 28%, transparent);
+  border-color: color-mix(in oklab, var(--warm-deep) 52%, transparent);
+  box-shadow: 0 4px 20px -6px rgba(0, 0, 0, 0.3);
+}
+:global(html.tod-night) .compact:hover {
+  border-color: color-mix(in oklab, var(--warm-deep) 72%, transparent);
+}
+
+.compactMeta {
+  flex: 1;
+  min-width: 0;
+}
+.compactTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+.compactTitle {
+  font-family: var(--ff-display);
+  font-size: 1.12rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.compactTime {
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  color: var(--_muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.compact .playBtn {
+  background: color-mix(in oklab, var(--warm) 88%, var(--paper));
+  color: var(--ink);
+  box-shadow: 0 3px 10px -3px rgba(0, 0, 0, 0.4);
+}
+:global(html.tod-night) .compact .playBtn {
+  background: var(--paper-deep);
+  color: var(--ink);
+}
+
+.compact .scrubFill {
+  background: var(--warm);
+}
+.compact .scrubKnob {
+  background: var(--paper);
+  border-color: var(--warm);
+  box-shadow: none;
+}
+
+:global(html.tod-night) .compact .scrubFill {
+  background: var(--warm-deep);
+}
+:global(html.tod-night) .compact .scrubKnob {
+  background: var(--paper-deep);
+  border-color: var(--warm-deep);
+}
+
+.full {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: color-mix(in oklab, var(--paper) 70%, var(--paper-deep));
+  border: 1px solid color-mix(in oklab, var(--ink) 12%, transparent);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.fullMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+}
+.fullEpNum {
+  font-family: var(--ff-hand);
+  font-size: 1.4rem;
+  color: var(--warm-deep);
+}
+.fullTitle {
+  font-family: var(--ff-display);
+  font-size: 1.35rem;
+  line-height: 1.15;
+  margin-bottom: 0.7rem;
+}
+.fullTime {
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+/* Play button */
+.playBtn {
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s cubic-bezier(.4,.2,.2,1), background 0.3s;
+  box-shadow: 0 6px 16px -6px rgba(46,42,30,0.4);
+  flex-shrink: 0;
+}
+.playBtn:hover { transform: scale(1.08); }
+
+/* Scrubber */
+.scrubber {
+  position: relative;
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: none;
+  overflow: visible;
+}
+.scrubFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--warm-deep);
+  border-radius: 999px;
+  transition: background 0.3s;
+}
+.scrubKnob {
+  position: absolute;
+  top: 50%;
+  background: var(--paper);
+  border: 1.5px solid var(--warm-deep);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 6px -1px rgba(46,42,30,0.3);
+}
+
+/* ─── Round / disc variant ─── */
+.round {
+  --_fg: var(--paper);
+  --_muted: color-mix(in oklab, var(--paper) 50%, transparent);
+
+  aspect-ratio: 1 / 1;
+  width: min(240px, 100%);
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 20% 18%;
+  background: var(--ink);
+  color: var(--_fg);
+  border: 1px solid color-mix(in oklab, var(--warm) 42%, transparent);
+  outline: 1px solid color-mix(in oklab, var(--warm) 14%, transparent);
+  outline-offset: 5px;
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.55);
+  box-sizing: border-box;
+  margin: 0 auto;
+  transition: background 0.4s, border-color 0.4s, box-shadow 0.4s;
+}
+
+:global(html.tod-night) .round {
+  --_fg: var(--ink);
+  --_muted: color-mix(in oklab, var(--ink) 50%, transparent);
+  background: var(--paper-deep);
+  border-color: color-mix(in oklab, var(--warm) 58%, transparent);
+  outline-color: color-mix(in oklab, var(--warm) 22%, transparent);
+  box-shadow:
+    0 0 18px 2px color-mix(in oklab, var(--warm) 8%, transparent),
+    0 8px 32px -8px rgba(0, 0, 0, 0.75);
+}
+
+.round .playBtn {
+  background: color-mix(in oklab, var(--warm) 88%, var(--paper));
+  color: var(--ink);
+  box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.45);
+  flex-shrink: 0;
+}
+
+:global(html.tod-night) .round .playBtn {
+  color: var(--paper-deep);
+}
+
+.roundEyebrow {
+  font-family: var(--ff-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--_muted);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.roundTitle {
+  font-family: var(--ff-display);
+  font-size: 0.78rem;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+.roundScrub {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.round .scrubFill {
+  background: var(--warm);
+}
+
+.round .scrubKnob {
+  background: var(--ink);
+  border-color: var(--warm);
+  box-shadow: none;
+}
+
+:global(html.tod-night) .round .scrubKnob {
+  background: var(--paper-deep);
+  border-color: var(--warm);
+}
+
+.roundTime {
+  font-family: ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  color: var(--_muted);
+  text-align: center;
+  flex-shrink: 0;
+}

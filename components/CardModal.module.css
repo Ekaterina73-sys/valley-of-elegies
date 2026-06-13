@@ -1,0 +1,368 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  background: color-mix(in oklab, #2e2a1e 62%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: clamp(1rem, 4vw, 3rem);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .4s cubic-bezier(.4,.2,.2,1);
+}
+
+.scrim[data-open="1"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.shell {
+  position: relative;
+  width: min(540px, 100%);
+  height: auto;
+  margin: auto;
+}
+
+.scrim[data-open="1"] .shell {
+  animation: modalGrow .6s cubic-bezier(.2,.7,.2,1) both;
+}
+
+@keyframes modalGrow {
+  from { opacity: 0; transform: translateY(8px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modalCf {
+  width: 100%;
+  height: auto;
+  background: #F5F0E3;
+  -webkit-mask: var(--kb-card-mask) center/100% 100% no-repeat;
+          mask: var(--kb-card-mask) center/100% 100% no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+.cardLine {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  color: #B8A572;
+}
+
+.cardLine path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.85;
+}
+
+.body {
+  position: relative;
+  z-index: 2;
+  padding: clamp(2.4rem, 4vw, 3.4rem) clamp(1.9rem, 4vw, 3rem) 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.eyebrow {
+  font-family: 'Cormorant SC', 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6a5a3a;
+  margin: 0 0 0.6rem;
+  text-align: center;
+}
+
+.name {
+  font-family: 'Bogart', 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  color: #2e2a1e;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.4rem;
+  text-align: center;
+}
+
+.roleText {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #5a4632;
+  margin: 0 0 1.2rem;
+  text-align: center;
+}
+
+/* Полноростовое изображение персонажа в модалке.
+   Фиксированная высота — одинаковый масштаб для всех персонажей. */
+.charImage {
+  position: relative;
+  height: clamp(260px, 44vh, 340px);
+  width: 100%;
+  margin-bottom: 0.4rem;
+}
+
+/* World card illustration in modal — fixed circle, consistent fill */
+.worldImage {
+  position: relative;
+  width: min(240px, 72%);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto 0.4rem;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.vignette {
+  width: 240px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(138, 106, 62, 0.5);
+  border-radius: 50%;
+  color: #8a6a3e;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-align: center;
+  background: rgba(138, 106, 62, 0.04);
+  max-width: 100%;
+  margin: 0 auto 1rem;
+  padding: 1rem;
+}
+
+.text {
+  font-family: 'Cormorant Garamond', 'Lora', Georgia, serif;
+  color: #2e2a1e;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.text p {
+  margin: 0 0 0.9em;
+  text-wrap: pretty;
+}
+
+.text p:first-of-type::first-letter {
+  font-family: 'Bogart', 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  font-size: 3.4em;
+  float: left;
+  line-height: 0.82;
+  padding: 0.04em 0.14em 0 0;
+  color: #8a6a3e;
+}
+
+.related {
+  margin-top: 1rem;
+  border-top: 1px solid rgba(138, 106, 62, 0.3);
+  padding-top: 1rem;
+}
+
+.related h4 {
+  font-family: 'Cormorant SC', 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #6a5a3a;
+  margin: 0 0 0.6rem;
+}
+
+.relList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.relList li {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  color: #5a4632;
+}
+
+.quote {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #2e1a0a;
+  border-left: none;
+  padding-left: 0;
+  margin: 1rem 0 1.4rem;
+  text-align: center;
+}
+
+.notes {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.notes li {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: #6a5a3a;
+  background: rgba(138, 106, 62, 0.08);
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(138, 106, 62, 0.2);
+}
+
+/* ─── Sound card inline player ─────────────────────────────────────────────── */
+/* Matches the compact AudioPlayer pill on the homepage */
+.soundPlayer {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1.1rem 0.85rem 0.75rem;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid color-mix(in oklab, var(--ink) 70%, transparent);
+  border-radius: 999px;
+  box-shadow: 0 4px 12px -6px rgba(46, 42, 30, 0.4);
+  margin-top: 0.4rem;
+}
+
+.soundPlayBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: color-mix(in oklab, var(--warm) 88%, var(--paper));
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px -3px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s cubic-bezier(.4,.2,.2,1);
+}
+.soundPlayBtn:hover { transform: scale(1.08); }
+
+.soundMeta {
+  flex: 1;
+  min-width: 0;
+}
+
+.soundTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.soundTitle {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--paper);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.soundTime {
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.72rem;
+  color: color-mix(in oklab, var(--paper) 52%, transparent);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.soundScrub {
+  position: relative;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  touch-action: none;
+  overflow: visible;
+}
+
+.soundRail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--paper) 32%, transparent);
+}
+
+.soundFill {
+  position: absolute;
+  left: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--warm);
+}
+
+.soundKnob {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1.5px solid var(--warm);
+  transform: translate(-50%, -50%);
+}
+
+.close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(245, 240, 227, 0.9);
+  border: 1px solid #B8A572;
+  color: #2e2a1e;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: background .25s, transform .25s;
+}
+
+.close:hover {
+  background: #F5F0E3;
+  transform: scale(1.06);
+}
+
+@media (max-width: 559px) {
+  .scrim { padding: 1.1rem; }
+  .body {
+    padding: clamp(2.2rem, 7vw, 3rem) clamp(1.5rem, 6vw, 2.2rem) 4rem;
+    gap: 1.1rem;
+  }
+  .vignette { max-width: 196px; }
+  .name { font-size: clamp(1.9rem, 7.5vw, 2.4rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim[data-open="1"] .shell { animation: none; }
+}

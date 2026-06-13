@@ -1,0 +1,24 @@
+.head {
+  max-width: 760px;
+  margin: clamp(2rem, 4vw, 3rem) 0 3.5rem;
+  padding: 0 clamp(1.5rem, 3vw, 2rem);
+}
+
+.head h1 {
+  font-family: 'Bogart', var(--ff-display);
+  font-size: clamp(2.6rem, 4.4vw, 5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0 0 1.1rem;
+}
+
+.lede {
+  font-family: var(--ff-body);
+  font-size: clamp(1.05rem, 1.7vw, 1.25rem);
+  line-height: 1.45;
+  color: var(--ink-soft);
+  margin: 0;
+  max-width: 52ch;
+}
