@@ -171,6 +171,7 @@ export default function CardModal({ open, kind, item, onClose }: Props) {
                       src={(item as Character).image!}
                       alt={(item as Character).name}
                       fill
+                      priority
                       style={{ objectFit: 'contain', objectPosition: 'bottom center' }}
                       sizes="500px"
                     />
@@ -187,6 +188,7 @@ export default function CardModal({ open, kind, item, onClose }: Props) {
                       src={(item as WorldCard).image!}
                       alt={(item as WorldCard).title}
                       fill
+                      priority
                       style={{ objectFit: 'cover', objectPosition: 'center' }}
                       sizes="300px"
                     />

@@ -13,8 +13,9 @@ import { soundStore } from './soundStore';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const BASE_VOL  = 0.38;
-const FADE_SEC  = 2.0;
+const BASE_VOL       = 0.38;
+const FADE_SEC       = 2.0;
+const RAIN_CROSS_SEC = 6.0; // crossfade duration ambient↔rain
 
 const AMBIENT_FILES: Record<'day' | 'night', string> = {
   day:   '/audio/Ambient-day.mp3',
@@ -61,16 +62,19 @@ function dispatch(name: string) {
 
 class AmbientAudioManager {
   // Web Audio
-  private ctx:         AudioContext | null = null;
-  private streetFader: GainNode     | null = null;
-  private ambientNode: AudioBufferSourceNode | null = null;
+  private ctx:          AudioContext | null = null;
+  private streetFader:  GainNode     | null = null;
+  private ambientFader: GainNode     | null = null; // controls ambient vol independently
+  private ambientNode:  AudioBufferSourceNode | null = null;
   private ambientBufs: Partial<Record<'day' | 'night', AudioBuffer>> = {};
 
   // Rain
-  private rainEl:   HTMLAudioElement           | null = null;
-  private rainSrc:  MediaElementAudioSourceNode | null = null;
+  private rainEl:    HTMLAudioElement            | null = null;
+  private rainSrc:   MediaElementAudioSourceNode | null = null;
+  private rainFader: GainNode                    | null = null;
   private _rainActive           = false;  // rain file currently playing (or paused by player)
   private _rainPausedByPlayer   = false;  // rain was paused because player started
+  private _rainMutedByWindow    = false;  // rain muted by window close (visual still running)
   private _rainedThisSession    = false;  // rain was triggered this session
   private _rainSetupDone        = false;  // one-time rain scheduling done
   private _rainThreshold        = 0;     // random 25–30 min, set once per session
@@ -97,6 +101,7 @@ class AmbientAudioManager {
       soundStore.subscribe(() => this._onVolumeChange());
       const saved = parseFloat(lsRead(LS_MINUTES) ?? '0');
       this._baseMs = isFinite(saved) && saved > 0 ? saved * 60_000 : 0;
+      window.addEventListener('kb:rain-start', () => this._onRainStart());
     }
   }
 
@@ -112,6 +117,11 @@ class AmbientAudioManager {
       this.streetFader = this.ctx.createGain();
       this.streetFader.gain.value = 0;
       this.streetFader.connect(this.ctx.destination);
+      // ambientFader sits between ambientNode and streetFader so we can
+      // crossfade ambient out while rain fades in independently
+      this.ambientFader = this.ctx.createGain();
+      this.ambientFader.gain.value = 1;
+      this.ambientFader.connect(this.streetFader);
     }
     if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
     return this.ctx;
@@ -137,7 +147,7 @@ class AmbientAudioManager {
       const node  = ctx.createBufferSource();
       node.buffer = buf;
       node.loop   = true;
-      node.connect(fader);
+      node.connect(this.ambientFader ?? fader);
       node.start(0);
       this.ambientNode = node;
     };
@@ -207,6 +217,13 @@ class AmbientAudioManager {
     this.rainEl.addEventListener('ended', () => {
       this._rainActive = false;
       this._rainPausedByPlayer = false;
+      // Fade ambient back in after rain cycle ends
+      if (this.ambientFader && this.ctx) {
+        const now = this.ctx.currentTime;
+        this.ambientFader.gain.cancelScheduledValues(now);
+        this.ambientFader.gain.setValueAtTime(this.ambientFader.gain.value, now);
+        this.ambientFader.gain.linearRampToValueAtTime(1, now + RAIN_CROSS_SEC);
+      }
       dispatch('kb:rain-end');
     });
   }
@@ -217,8 +234,11 @@ class AmbientAudioManager {
     const ctx   = this._getCtx();
     const fader = this.streetFader;
     if (!ctx || !fader || !this.rainEl) return;
+    this.rainFader = ctx.createGain();
+    this.rainFader.gain.value = 0;
+    this.rainFader.connect(fader);
     this.rainSrc = ctx.createMediaElementSource(this.rainEl);
-    this.rainSrc.connect(fader);
+    this.rainSrc.connect(this.rainFader);
   }
 
   private _triggerRain() {
@@ -228,10 +248,42 @@ class AmbientAudioManager {
     lsSave(LS_LAST_RAIN, todayStr());
 
     this._connectRain();
-    if (!this.rainEl) return;
+    if (!this.rainEl || !this.rainFader || !this.ctx) return;
     this.rainEl.currentTime = 0;
     this.rainEl.play().catch(() => {});
+    this._crossfadeToRain();
     dispatch('kb:rain-start');
+  }
+
+  // Handles kb:rain-start from both internal (_triggerRain) and external dispatch.
+  // In production _rainActive is already true when _triggerRain dispatches → no-op.
+  // On manual dispatch (testing / future integrations) → starts rain audio with fade-in.
+  private _onRainStart() {
+    if (this._rainActive || !this._userPlaying) return;
+    this._rainActive        = true;
+    this._rainedThisSession = true;
+    lsSave(LS_LAST_RAIN, todayStr());
+    this._connectRain();
+    if (!this.rainEl || !this.rainFader || !this.ctx) return;
+    this.rainEl.currentTime = 0;
+    this.rainEl.play().catch(() => {});
+    this._crossfadeToRain();
+  }
+
+  private _crossfadeToRain() {
+    const ctx = this.ctx;
+    if (!ctx || !this.rainFader) return;
+    const now = ctx.currentTime;
+    // Rain fades in
+    this.rainFader.gain.cancelScheduledValues(now);
+    this.rainFader.gain.setValueAtTime(0, now);
+    this.rainFader.gain.linearRampToValueAtTime(1, now + RAIN_CROSS_SEC);
+    // Ambient fades out simultaneously
+    if (this.ambientFader) {
+      this.ambientFader.gain.cancelScheduledValues(now);
+      this.ambientFader.gain.setValueAtTime(this.ambientFader.gain.value, now);
+      this.ambientFader.gain.linearRampToValueAtTime(0, now + RAIN_CROSS_SEC);
+    }
   }
 
   private _setupRainSession() {
@@ -324,7 +376,12 @@ class AmbientAudioManager {
     this._rampFader(this._targetGain());
     this._startAmbient();
 
-    if (this._rainPausedByPlayer && this.rainEl && !this.rainEl.ended) {
+    if (this._rainMutedByWindow && this.rainEl && !this.rainEl.ended) {
+      // Window was closed during rain — resume audio without resetting the visual
+      this._rainMutedByWindow = false;
+      this._rainActive = true;
+      this.rainEl.play().catch(() => {});
+    } else if (this._rainPausedByPlayer && this.rainEl && !this.rainEl.ended) {
       this._rainPausedByPlayer = false;
       this._rainActive = true;
       this.rainEl.play().catch(() => {});
@@ -358,9 +415,34 @@ class AmbientAudioManager {
         this._rainPausedByPlayer = true;
         this._rainActive = false;
         dispatch('kb:rain-end');
+      } else if (this._rainMutedByWindow) {
+        // Rain was muted by window close; player is fully taking over
+        this._rainMutedByWindow = false;
+        this._rainPausedByPlayer = true;
       }
 
       onDone?.();
+    }, FADE_SEC * 1_000 + 100);
+  }
+
+  /** Window closed during rain — fade audio out without resetting the visual cycle. */
+  muteForWindow() {
+    this._userPlaying = false;
+    this._stopTracking();
+    this._stopRainCheck();
+    if (this._rainRandomTimer) { clearTimeout(this._rainRandomTimer); this._rainRandomTimer = null; }
+    if (this._pipinsTimer)     { clearTimeout(this._pipinsTimer);     this._pipinsTimer = null; }
+
+    this._rampFader(0);
+
+    setTimeout(() => {
+      try { this.ambientNode?.stop(); } catch {}
+      this.ambientNode = null;
+      if (this.rainEl && !this.rainEl.ended && this._rainActive) {
+        try { this.rainEl.pause(); } catch {}
+        this._rainActive = false;
+        this._rainMutedByWindow = true;
+      }
     }, FADE_SEC * 1_000 + 100);
   }
 

@@ -34,6 +34,8 @@ export default function Window({ className }: WindowProps) {
   const interactedRef = useRef(false);
   /** Актуальное ajar для event-listener без stale closure */
   const ajarRef = useRef(false);
+  /** true когда дождь идёт — для чтения в ajar-эффекте без stale closure */
+  const rainActiveRef = useRef(false);
   /** Ref на casement — для заморозки breathing-анимации */
   const casementRef = useRef<HTMLDivElement>(null);
   /**
@@ -45,16 +47,21 @@ export default function Window({ className }: WindowProps) {
    */
   const pinnedSashRef = useRef<HTMLElement | null>(null);
 
-  // Синхронизируем ref с состоянием
+  // Синхронизируем refs с состоянием
   useEffect(() => { ajarRef.current = ajar; }, [ajar]);
+  useEffect(() => { rainActiveRef.current = rainElapsed >= 0; }, [rainElapsed]);
 
   // Управляем амбиентным аудио при изменении ajar
   useEffect(() => {
-    if (!interactedRef.current) return; // не играем при монтировании
+    if (!interactedRef.current) return;
     if (ajar) {
       ambientAudio.play();
     } else {
-      ambientAudio.stop();
+      if (rainActiveRef.current) {
+        ambientAudio.muteForWindow(); // только звук, визуал продолжает цикл
+      } else {
+        ambientAudio.stop();
+      }
     }
   }, [ajar]);
 
@@ -138,7 +145,7 @@ export default function Window({ className }: WindowProps) {
     rainElapsed < 10  ? rainElapsed / 10 :
     rainElapsed < 420 ? 1 :
     rainElapsed < 430 ? (430 - rainElapsed) / 10 : 0;
-  const effectiveIntensity = ajar ? rainLightIntensity : 0;
+  const effectiveIntensity = rainLightIntensity;
   const rainBlurPx = effectiveIntensity * 2.5;
   const sceneStyle = rainElapsed >= 0
     ? { filter: `blur(${rainBlurPx.toFixed(1)}px)` }
@@ -181,7 +188,7 @@ export default function Window({ className }: WindowProps) {
                 }}
               />
             )}
-            <RainCanvas elapsedSec={ajar ? rainElapsed : -1} startKey={rainKey} />
+            <RainCanvas elapsedSec={rainElapsed} startKey={rainKey} />
           </div>
           <div className={styles.sashes}>
             <Sash side="left" />

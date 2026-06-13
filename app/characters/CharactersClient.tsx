@@ -18,6 +18,7 @@ export default function CharactersClient({ characters }: { characters: Character
             character={c}
             index={i}
             onOpen={setOpen}
+            priority={i < 4}
           />
         ))}
       </div>

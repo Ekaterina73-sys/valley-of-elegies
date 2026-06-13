@@ -2,13 +2,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 
-// ── Phase timecodes (seconds from kb:rain-start) ─────────────────────────────
-// 0–10s     → no drops (light cooling / blur handled by Window.tsx)
-// 10–130s   → drops ramp 0→1 (2 min)
-// 130–300s  → peak (intensity = 1)
-// 300–420s  → drops fade 1→0 (2 min)
-// 420s+     → done
-
+// ── Phase timecodes (seconds from kb:rain-start) ──────────────────────────────
 function dropIntensity(t: number): number {
   if (t < 10)  return 0;
   if (t < 130) return (t - 10) / 120;
@@ -17,31 +11,57 @@ function dropIntensity(t: number): number {
   return 0;
 }
 
-// ── Drop ──────────────────────────────────────────────────────────────────────
-
-interface Drop {
-  x: number;
-  y: number;
-  r: number;
-  vY: number;       // fall speed px/ms (0 = accumulating)
-  trailLen: number;
-  alpha: number;
-  done: boolean;
+// ── Geometry: drops only on sash glass, never in the center gap ───────────────
+// Left sash glass:  2%–46% of canvas width
+// Right sash glass: 54%–98% of canvas width
+function sashX(W: number): number {
+  return Math.random() < 0.5
+    ? W * (0.02 + Math.random() * 0.44)
+    : W * (0.54 + Math.random() * 0.44);
 }
 
-function spawnDrop(W: number, H: number, intensity: number): Drop {
-  // Smaller drops; slightly bigger at peak so they're still visible
-  const maxR = 1.5 + intensity * 2.5;   // 1.5px at start → 4px at peak
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface Drop {
+  x: number; y: number; r: number;
+  vY: number; trailLen: number; alpha: number; done: boolean;
+}
+
+// Condensation blobs — small, static, fade in/out, never fall
+interface Blob {
+  x: number; y: number; r: number;
+  alpha: number; age: number; maxAge: number; done: boolean;
+}
+
+// ── Spawn ─────────────────────────────────────────────────────────────────────
+
+function spawnDrop(W: number, H: number, fallThres: number): Drop {
+  // Always start below fallThres so there's a visible "stuck" phase
+  const maxStart = Math.min(1.4, fallThres * 0.60);
   return {
-    x:        W * (0.05 + Math.random() * 0.90),
+    x:        sashX(W),
     y:        H * (0.02 + Math.random() * 0.26),
-    r:        1.0 + Math.random() * (maxR - 1.0),
+    r:        0.5 + Math.random() * maxStart,
     vY:       0,
     trailLen: 0,
     alpha:    0,
     done:     false,
   };
 }
+
+function spawnBlob(W: number, H: number): Blob {
+  return {
+    x:      sashX(W),
+    y:      H * (0.01 + Math.random() * 0.38),
+    r:      0.4 + Math.random() * 1.1,
+    alpha:  0,
+    age:    0,
+    maxAge: 4000 + Math.random() * 9000,
+    done:   false,
+  };
+}
+
+// ── Draw ──────────────────────────────────────────────────────────────────────
 
 function drawDrop(ctx: CanvasRenderingContext2D, d: Drop) {
   const falling = d.vY > 0;
@@ -51,24 +71,24 @@ function drawDrop(ctx: CanvasRenderingContext2D, d: Drop) {
   ctx.save();
   ctx.globalAlpha = d.alpha * 0.94;
 
-  // Wet trail (only when long enough and drop has a visible size)
+  // Trail — wider than before
   if (falling && d.trailLen > 2) {
-    const tw = Math.max(rX * 0.7, 0.8);
+    const tw = Math.max(rX * 1.15, 1.8);
     const tg = ctx.createLinearGradient(d.x, d.y - d.trailLen, d.x, d.y);
     tg.addColorStop(0,    'rgba(175,210,255,0)');
-    tg.addColorStop(0.35, 'rgba(185,218,255,0.26)');
-    tg.addColorStop(1,    'rgba(205,228,255,0.50)');
+    tg.addColorStop(0.35, 'rgba(185,218,255,0.30)');
+    tg.addColorStop(1,    'rgba(205,228,255,0.58)');
     ctx.beginPath();
     ctx.moveTo(d.x - tw * 0.42, d.y - d.trailLen);
     ctx.lineTo(d.x + tw * 0.42, d.y - d.trailLen);
-    ctx.lineTo(d.x + tw * 0.60, d.y - rY * 0.4);
-    ctx.lineTo(d.x - tw * 0.60, d.y - rY * 0.4);
+    ctx.lineTo(d.x + tw * 0.65, d.y - rY * 0.4);
+    ctx.lineTo(d.x - tw * 0.65, d.y - rY * 0.4);
     ctx.closePath();
     ctx.fillStyle = tg;
     ctx.fill();
   }
 
-  // Drop body — translucent center with bright glass rim
+  // Drop body
   ctx.beginPath();
   ctx.ellipse(d.x, d.y, rX, rY, 0, 0, Math.PI * 2);
   const bg = ctx.createRadialGradient(
@@ -83,7 +103,7 @@ function drawDrop(ctx: CanvasRenderingContext2D, d: Drop) {
   ctx.fillStyle = bg;
   ctx.fill();
 
-  // Specular highlight — minimum size so small drops stay visible
+  // Specular highlight
   const hx     = d.x - rX * 0.28;
   const hy     = d.y - rY * 0.36;
   const specRX = Math.max(rX * 0.42, 0.9);
@@ -100,9 +120,26 @@ function drawDrop(ctx: CanvasRenderingContext2D, d: Drop) {
   ctx.restore();
 }
 
-// ── Static constants ──────────────────────────────────────────────────────────
+function drawBlob(ctx: CanvasRenderingContext2D, b: Blob) {
+  ctx.save();
+  ctx.globalAlpha = b.alpha * 0.80;
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+  const g = ctx.createRadialGradient(
+    b.x - b.r * 0.28, b.y - b.r * 0.28, 0,
+    b.x, b.y, b.r
+  );
+  g.addColorStop(0,    'rgba(210, 235, 255, 0.30)');
+  g.addColorStop(0.55, 'rgba(185, 218, 255, 0.18)');
+  g.addColorStop(1,    'rgba(255, 255, 255, 0.82)');
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.restore();
+}
 
-const GROW_RATE = 0.0035; // r/ms while accumulating
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const GROW_RATE = 0.0035;
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -111,9 +148,11 @@ interface Props { elapsedSec: number; startKey: number }
 export default function RainCanvas({ elapsedSec, startKey }: Props) {
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const dropsRef     = useRef<Drop[]>([]);
+  const blobsRef     = useRef<Blob[]>([]);
   const rafRef       = useRef(0);
   const lastTRef     = useRef(0);
   const nextSpawnRef = useRef(0);
+  const nextBlobRef  = useRef(0);
   const elapsedRef   = useRef(elapsedSec);
   elapsedRef.current = elapsedSec;
 
@@ -123,7 +162,7 @@ export default function RainCanvas({ elapsedSec, startKey }: Props) {
     const ctx = canvas.getContext('2d');
     if (!ctx)   { rafRef.current = 0; return; }
 
-    const dt         = Math.min(ts - lastTRef.current, 50);
+    const dt = Math.min(ts - lastTRef.current, 50);
     lastTRef.current = ts;
 
     const t         = elapsedRef.current;
@@ -131,21 +170,46 @@ export default function RainCanvas({ elapsedSec, startKey }: Props) {
     const W = canvas.width;
     const H = canvas.height;
 
-    // Intensity-driven physics — faster and more drops near peak
-    const fallThres  = 3.5 - intensity * 1.5;          // 3.5px → 2.0px at peak
-    const dynFallMax = 0.08 + intensity * 0.20;         // 0.08 → 0.28 px/ms
-    const dynAccel   = 0.00022 + intensity * 0.00028;   // faster accel at peak
+    const fallThres  = 3.5 - intensity * 1.5;
+    const dynFallMax = 0.08 + intensity * 0.20;
+    const dynAccel   = 0.00022 + intensity * 0.00028;
 
-    // More drops and faster spawn as intensity rises
-    const maxDrops = Math.round(4 + intensity * 24);    // 4 → 28
-    const spawnMs  = 280 + (1 - intensity) * 3220;      // 280ms → 3.5s
+    const maxDrops = Math.round(4 + intensity * 24);
+    const spawnMs  = 280 + (1 - intensity) * 3220;
+
+    const maxBlobs = Math.round(intensity * 40);
+    const blobMs   = 350 + (1 - intensity) * 2800;
+
     if (ts >= nextSpawnRef.current && dropsRef.current.length < maxDrops && intensity > 0) {
-      dropsRef.current.push(spawnDrop(W, H, intensity));
+      dropsRef.current.push(spawnDrop(W, H, fallThres));
       nextSpawnRef.current = ts + spawnMs * (0.65 + Math.random() * 0.70);
+    }
+
+    if (ts >= nextBlobRef.current && blobsRef.current.length < maxBlobs && intensity > 0) {
+      blobsRef.current.push(spawnBlob(W, H));
+      nextBlobRef.current = ts + blobMs * (0.5 + Math.random() * 1.0);
     }
 
     ctx.clearRect(0, 0, W, H);
 
+    // Blobs drawn first (behind drops)
+    blobsRef.current = blobsRef.current.filter(b => {
+      b.age += dt;
+      const fadeIn  = b.maxAge * 0.15;
+      const fadeOut = b.maxAge * 0.25;
+      if (b.age < fadeIn) {
+        b.alpha = b.age / fadeIn;
+      } else if (b.age > b.maxAge - fadeOut) {
+        b.alpha = Math.max(0, (b.maxAge - b.age) / fadeOut);
+      } else {
+        b.alpha = 1;
+      }
+      if (b.age >= b.maxAge) b.done = true;
+      if (!b.done) drawBlob(ctx, b);
+      return !b.done;
+    });
+
+    // Sliding drops on top
     dropsRef.current = dropsRef.current.filter(d => {
       d.alpha = Math.min(1, d.alpha + dt * 0.0032);
 
@@ -165,8 +229,7 @@ export default function RainCanvas({ elapsedSec, startKey }: Props) {
 
     dropsRef.current.forEach(d => drawDrop(ctx, d));
 
-    // Keep loop alive while rain is scheduled (t≥0) or drops are still draining
-    if (elapsedRef.current >= 0 || intensity > 0 || dropsRef.current.length > 0) {
+    if (elapsedRef.current >= 0 || intensity > 0 || dropsRef.current.length > 0 || blobsRef.current.length > 0) {
       rafRef.current = requestAnimationFrame(animate);
     } else {
       rafRef.current = 0;
@@ -175,12 +238,12 @@ export default function RainCanvas({ elapsedSec, startKey }: Props) {
 
   const active = elapsedSec >= 0;
 
-  // startKey increments on every new rain session — forces the effect to
-  // restart the RAF loop even when active was already true (re-triggered rain)
   useEffect(() => {
     if (active) {
       dropsRef.current     = [];
+      blobsRef.current     = [];
       nextSpawnRef.current = performance.now();
+      nextBlobRef.current  = performance.now();
       lastTRef.current     = performance.now();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(animate);
@@ -189,6 +252,7 @@ export default function RainCanvas({ elapsedSec, startKey }: Props) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current   = 0;
       dropsRef.current = [];
+      blobsRef.current = [];
       const canvas = canvasRef.current;
       if (canvas) {
         const ctx = canvas.getContext('2d');

@@ -26,10 +26,10 @@ export default function Footer() {
         <div>
           <h4>Слушать</h4>
           <ul>
-            <li><a href="#" className={styles.linkBtn}>Apple Podcasts</a></li>
-            <li><a href="#" className={styles.linkBtn}>Spotify</a></li>
-            <li><a href="#" className={styles.linkBtn}>Яндекс Музыка</a></li>
-            <li><Link href="/about#platforms" className={styles.linkBtn}>Все платформы →</Link></li>
+            <li><a href="https://podcasts.apple.com/us/podcast/радио-долины-элегий/id1896918738" target="_blank" rel="noopener noreferrer" className={styles.linkBtn}>Apple Podcasts</a></li>
+            <li><a href="https://open.spotify.com/show/033xbQONziyXaLnOms1gLw" target="_blank" rel="noopener noreferrer" className={styles.linkBtn}>Spotify</a></li>
+            <li><span className={styles.linkBtn} style={{ opacity: 0.45, cursor: 'default' }}>Яндекс Музыка</span></li>
+            <li><a href="https://valleyofelegies.mave.digital/" target="_blank" rel="noopener noreferrer" className={styles.linkBtn}>Все платформы →</a></li>
           </ul>
         </div>
       </div>

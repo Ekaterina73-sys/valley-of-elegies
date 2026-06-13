@@ -8,9 +8,10 @@ type Props = {
   character: Character;
   index: number;
   onOpen: (c: Character) => void;
+  priority?: boolean;
 };
 
-export default function CharacterCard({ character, index, onOpen }: Props) {
+export default function CharacterCard({ character, index, onOpen, priority = false }: Props) {
   const tilt = useTilt(10);
   const eyebrow = (character.role || 'житель').toUpperCase();
 
@@ -38,6 +39,7 @@ export default function CharacterCard({ character, index, onOpen }: Props) {
                     src={character.imagePreview}
                     alt={character.name}
                     fill
+                    priority={priority}
                     style={{ objectFit: 'cover', objectPosition: 'center' }}
                     sizes="200px"
                   />
@@ -47,6 +49,7 @@ export default function CharacterCard({ character, index, onOpen }: Props) {
                       src={character.image!}
                       alt={character.name}
                       fill
+                      priority={priority}
                       style={{ objectFit: 'contain', objectPosition: 'center top' }}
                       sizes="200px"
                     />
