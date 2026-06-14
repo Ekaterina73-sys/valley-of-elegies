@@ -26,6 +26,7 @@ export default function EpisodeList({ episodes, tracks }: Props) {
     if (isActive) {
       toggle();
     } else {
+      setActiveEp(ep);
       play(track);
     }
   };

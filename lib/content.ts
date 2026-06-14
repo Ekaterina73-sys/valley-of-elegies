@@ -98,7 +98,7 @@ function readMd(filePath: string): { data: Record<string, unknown>; content: str
 
 // ─── RSS helpers ─────────────────────────────────────────────────────────────
 
-const MAVE_RSS = 'https://valleyofelegies.mave.digital/ep/rss';
+const MAVE_RSS = 'https://cloud.mave.digital/72601';
 
 function rssText(block: string, tag: string): string {
   const m = block.match(new RegExp(`<${tag}(?:\\s[^>]*)?><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>|<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}>`, 'i'));
