@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import type { RadioEpisode, EvangelineTrack } from '@/lib/content';
 import AudioPlayer from './AudioPlayer';
@@ -11,12 +11,16 @@ import styles from './EpisodeList.module.css';
 type Props = { episodes: RadioEpisode[]; tracks: EvangelineTrack[] };
 
 export default function EpisodeList({ episodes, tracks }: Props) {
-  const { state: pstate, play, toggle } = usePlayer();
+  const { state: pstate, play, toggle, setPlaylist } = usePlayer();
 
   const sortedEps = useMemo(
     () => [...episodes].sort((a, b) => a.episode - b.episode),
     [episodes]
   );
+
+  useEffect(() => {
+    setPlaylist('episodes', sortedEps.map(epToTrack));
+  }, [sortedEps, setPlaylist]);
 
   const [activeEp, setActiveEp] = useState(sortedEps[0]);
 

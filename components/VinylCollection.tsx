@@ -77,6 +77,7 @@ export default function VinylCollection({ tracks: rawTracks }: { tracks: Evangel
                 role="button"
                 tabIndex={0}
                 data-active={isActive ? '1' : '0'}
+                data-playing={isPlaying ? '1' : '0'}
                 data-hue={tr.labelHue}
                 onClick={() => setActiveTrack(tr)}
                 onKeyDown={(e) => {
