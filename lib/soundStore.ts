@@ -5,7 +5,7 @@
 
 class SoundStore {
   private _muted   = false;
-  private _volume  = 0.35;   // 0–1; совпадает с начальным vol=35 в ClientShell
+  private _volume  = 0.75;   // 0–1; совпадает с начальным vol=75 в ClientShell
   private _handlers = new Set<() => void>();
 
   get muted():    boolean { return this._muted; }

@@ -4,66 +4,95 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, Suspense } from 'react';
 import styles from './PageTransitionLoader.module.css';
 
-const SHOW_AFTER_MS = 250;  // Не мигаем при быстрой загрузке
-const MAX_WAIT_MS   = 10_000; // Максимум ждём 10 секунд
+// Show loader only if navigation takes longer than this
+const SHOW_AFTER_MS = 300;
+// How long to wait for React to settle before first image scan
+const SETTLE_MS     = 250;
+// Poll interval while waiting for images
+const POLL_MS       = 200;
+// Hard cap — dismiss no matter what
+const MAX_WAIT_MS   = 20_000;
+
+/**
+ * Returns images inside <main> that are still loading AND
+ * are close enough to the viewport that the browser has
+ * actually started fetching them.
+ */
+function pendingImages(): HTMLImageElement[] {
+  const scope = document.querySelector('main') ?? document;
+  const vh    = window.innerHeight;
+  return Array.from(
+    scope.querySelectorAll<HTMLImageElement>('img')
+  ).filter(img => {
+    if (img.complete) return false;
+    if (!img.src && !img.srcset) return false;
+    // Ignore lazy images far below the fold — they haven't started loading
+    const top = img.getBoundingClientRect().top;
+    return top < vh * 3;
+  });
+}
 
 function Inner() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [fading,  setFading]  = useState(false);
-  const isFirstRef  = useRef(true);
+  const isFirstRef   = useRef(true);
   const cancelledRef = useRef(false);
+  // Keep a stable ref to the fade-out timer so cleanup can clear it
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // Пропускаем первый рендер — начальную загрузку ведёт LoaderSpark
+    // Skip initial mount — initial load is handled by LoaderSpark
     if (isFirstRef.current) { isFirstRef.current = false; return; }
 
     cancelledRef.current = false;
     let shown     = false;
     let showTimer: ReturnType<typeof setTimeout> | null = null;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+    let maxTimer:  ReturnType<typeof setTimeout>  | null = null;
 
-    const show = () => {
+    const dismiss = () => {
+      if (showTimer) { clearTimeout(showTimer);  showTimer = null; }
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      if (maxTimer)  { clearTimeout(maxTimer);   maxTimer  = null; }
+      cancelledRef.current = true;
+      if (!shown) return; // never appeared — nothing to hide
+      setFading(true);
+      fadeTimerRef.current = setTimeout(() => setVisible(false), 420);
+    };
+
+    // Show the overlay after SHOW_AFTER_MS if we haven't dismissed yet
+    showTimer = setTimeout(() => {
       if (cancelledRef.current) return;
       shown = true;
       setFading(false);
       setVisible(true);
-    };
+    }, SHOW_AFTER_MS);
 
-    const hide = () => {
-      if (showTimer) { clearTimeout(showTimer); showTimer = null; }
-      cancelledRef.current = true;
-      if (!shown) return;
-      setFading(true);
-      setTimeout(() => setVisible(false), 420);
-    };
-
-    showTimer = setTimeout(show, SHOW_AFTER_MS);
-
-    // Два кадра — даём React закоммитить DOM новой страницы
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    // Wait for React to settle, then start polling
+    const settleTimer = setTimeout(() => {
       if (cancelledRef.current) return;
 
-      const imgs    = Array.from(document.querySelectorAll<HTMLImageElement>('img'));
-      const pending = imgs.filter(img => !img.complete);
+      const check = () => {
+        if (cancelledRef.current) return;
+        if (pendingImages().length === 0) dismiss();
+      };
 
-      if (pending.length === 0) { hide(); return; }
+      check(); // immediate check after settle
 
-      const loaded = pending.map(img =>
-        new Promise<void>(res => {
-          img.addEventListener('load',  () => res(), { once: true });
-          img.addEventListener('error', () => res(), { once: true });
-        })
-      );
-
-      Promise.race([
-        Promise.all(loaded),
-        new Promise<void>(res => setTimeout(res, MAX_WAIT_MS)),
-      ]).then(hide);
-    }));
+      if (!cancelledRef.current) {
+        pollTimer = setInterval(check, POLL_MS);
+        maxTimer  = setTimeout(dismiss, MAX_WAIT_MS);
+      }
+    }, SETTLE_MS);
 
     return () => {
       cancelledRef.current = true;
+      clearTimeout(settleTimer);
       if (showTimer) clearTimeout(showTimer);
+      if (pollTimer) clearInterval(pollTimer);
+      if (maxTimer)  clearTimeout(maxTimer);
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
     };
   }, [pathname]);
 

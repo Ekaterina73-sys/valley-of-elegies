@@ -14,22 +14,25 @@ import { soundStore } from './soundStore';
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const BASE_VOL       = 0.38;
-const FADE_SEC       = 2.0;
+const FADE_IN_SEC    = 2.0;
+const FADE_OUT_SEC   = 1.5;
+const FADE_SEC       = FADE_IN_SEC; // kept for internal cross-fade helpers
 const RAIN_CROSS_SEC = 6.0; // crossfade duration ambient↔rain
+const EFFECTS_VOL    = 0.65; // base volume for UI sound effects (opening/closing)
 
 const AMBIENT_FILES: Record<'day' | 'night', string> = {
   day:   '/audio/Ambient-day.mp3',
   night: '/audio/Ambient-night.mp3',
 };
 
-const RAIN_FILE = '/audio/sounds/Rain.mp3';
+const RAIN_FILE         = '/audio/sounds/Rain.mp3';
+const WINDOW_OPEN_FILE  = '/audio/sounds/Opening-window.mp3';
+const WINDOW_CLOSE_FILE = '/audio/sounds/Closing-window.mp3';
 
 // Add files here when audio is ready. Each entry is a path.
 // Code picks randomly, never repeating the same index twice in a row.
 const PIPINS_FILES: string[] = [
-  // '/audio/events/pipins-1.mp3',
-  // '/audio/events/pipins-2.mp3',
-  // '/audio/events/pipins-3.mp3',
+  '/audio/sounds/Pippins.mp3',
 ];
 
 const LS_MINUTES   = 'vde_minutes_total';
@@ -65,8 +68,10 @@ class AmbientAudioManager {
   private ctx:          AudioContext | null = null;
   private streetFader:  GainNode     | null = null;
   private ambientFader: GainNode     | null = null; // controls ambient vol independently
+  private effectsGain:  GainNode     | null = null; // for window open/close sounds (bypasses streetFader)
   private ambientNode:  AudioBufferSourceNode | null = null;
-  private ambientBufs: Partial<Record<'day' | 'night', AudioBuffer>> = {};
+  private ambientBufs:  Partial<Record<'day' | 'night', AudioBuffer>> = {};
+  private _windowBufs:  Partial<Record<'open' | 'close', AudioBuffer>> = {};
 
   // Rain
   private rainEl:    HTMLAudioElement            | null = null;
@@ -80,6 +85,7 @@ class AmbientAudioManager {
   private _rainThreshold        = 0;     // random 25–30 min, set once per session
   private _rainRandomTimer:     ReturnType<typeof setTimeout> | null = null;
   private _rainCheckTimer:      ReturnType<typeof setTimeout> | null = null;
+  private _rainEndCrossTimer:   ReturnType<typeof setTimeout> | null = null;
 
   // Pipins whistle
   private _pipinsSessionMs  = 0;    // accumulated window-open time in this session (ms)
@@ -122,6 +128,11 @@ class AmbientAudioManager {
       this.ambientFader = this.ctx.createGain();
       this.ambientFader.gain.value = 1;
       this.ambientFader.connect(this.streetFader);
+      // effectsGain bypasses streetFader so window sounds play at full level
+      // regardless of whether the ambient is fading in/out
+      this.effectsGain = this.ctx.createGain();
+      this.effectsGain.gain.value = EFFECTS_VOL * soundStore.effective;
+      this.effectsGain.connect(this.ctx.destination);
     }
     if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
     return this.ctx;
@@ -174,6 +185,9 @@ class AmbientAudioManager {
   }
 
   private _onVolumeChange() {
+    if (this.effectsGain) {
+      this.effectsGain.gain.value = EFFECTS_VOL * soundStore.effective;
+    }
     if (!this._userPlaying) return;
     this._rampFader(this._targetGain(), 0.25);
   }
@@ -214,15 +228,21 @@ class AmbientAudioManager {
     if (this.rainEl) return;
     this.rainEl = new Audio(RAIN_FILE);
     this.rainEl.preload = 'none';
+    // Schedule end-crossfade once duration is known
+    this.rainEl.addEventListener('loadedmetadata', () => {
+      if (this._rainActive) this._scheduleRainEndCrossfade();
+    });
     this.rainEl.addEventListener('ended', () => {
       this._rainActive = false;
       this._rainPausedByPlayer = false;
-      // Fade ambient back in after rain cycle ends
-      if (this.ambientFader && this.ctx) {
+      if (this._rainEndCrossTimer) { clearTimeout(this._rainEndCrossTimer); this._rainEndCrossTimer = null; }
+      // _crossfadeFromRain already scheduled the ambient fade-in — nothing to do here.
+      // Safety net: if crossfade somehow didn't fire, snap ambient back immediately.
+      if (this.ambientFader && this.ctx && this.ambientFader.gain.value < 0.9) {
         const now = this.ctx.currentTime;
         this.ambientFader.gain.cancelScheduledValues(now);
         this.ambientFader.gain.setValueAtTime(this.ambientFader.gain.value, now);
-        this.ambientFader.gain.linearRampToValueAtTime(1, now + RAIN_CROSS_SEC);
+        this.ambientFader.gain.linearRampToValueAtTime(1, now + 1.0);
       }
       dispatch('kb:rain-end');
     });
@@ -252,6 +272,8 @@ class AmbientAudioManager {
     this.rainEl.currentTime = 0;
     this.rainEl.play().catch(() => {});
     this._crossfadeToRain();
+    // If metadata already loaded, schedule end-crossfade now; otherwise loadedmetadata will do it.
+    if (isFinite(this.rainEl.duration)) this._scheduleRainEndCrossfade();
     dispatch('kb:rain-start');
   }
 
@@ -268,6 +290,7 @@ class AmbientAudioManager {
     this.rainEl.currentTime = 0;
     this.rainEl.play().catch(() => {});
     this._crossfadeToRain();
+    if (isFinite(this.rainEl.duration)) this._scheduleRainEndCrossfade();
   }
 
   private _crossfadeToRain() {
@@ -284,6 +307,42 @@ class AmbientAudioManager {
       this.ambientFader.gain.setValueAtTime(this.ambientFader.gain.value, now);
       this.ambientFader.gain.linearRampToValueAtTime(0, now + RAIN_CROSS_SEC);
     }
+  }
+
+  // Mirror of _crossfadeToRain: rain fades out, ambient fades in simultaneously.
+  // Called RAIN_CROSS_SEC seconds before the rain file ends.
+  private _crossfadeFromRain() {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    if (this.rainFader) {
+      this.rainFader.gain.cancelScheduledValues(now);
+      this.rainFader.gain.setValueAtTime(this.rainFader.gain.value, now);
+      this.rainFader.gain.linearRampToValueAtTime(0, now + RAIN_CROSS_SEC);
+    }
+    if (this.ambientFader) {
+      this.ambientFader.gain.cancelScheduledValues(now);
+      this.ambientFader.gain.setValueAtTime(this.ambientFader.gain.value, now);
+      this.ambientFader.gain.linearRampToValueAtTime(1, now + RAIN_CROSS_SEC);
+    }
+  }
+
+  // Schedules _crossfadeFromRain to fire RAIN_CROSS_SEC seconds before the file ends.
+  private _scheduleRainEndCrossfade() {
+    const el = this.rainEl;
+    if (!el) return;
+    const dur = el.duration;
+    if (!isFinite(dur) || dur <= RAIN_CROSS_SEC) return;
+    const remainingMs = (dur - el.currentTime - RAIN_CROSS_SEC) * 1_000;
+    if (this._rainEndCrossTimer) { clearTimeout(this._rainEndCrossTimer); this._rainEndCrossTimer = null; }
+    if (remainingMs <= 0) {
+      this._crossfadeFromRain();
+      return;
+    }
+    this._rainEndCrossTimer = setTimeout(() => {
+      this._rainEndCrossTimer = null;
+      if (this._rainActive) this._crossfadeFromRain();
+    }, remainingMs);
   }
 
   private _setupRainSession() {
@@ -326,15 +385,18 @@ class AmbientAudioManager {
 
     let delayMs: number;
     if (!this._pipinsFirstFired) {
-      delayMs = Math.max(0, 9 * 60_000 - this._pipinsSessionMs);
+      // First fire: 7 minutes of accumulated window-open time
+      delayMs = Math.max(0, 7 * 60_000 - this._pipinsSessionMs);
     } else {
-      delayMs = (10 + Math.random() * 5) * 60_000;
+      // Subsequent: random 7–10 minutes
+      delayMs = (7 + Math.random() * 3) * 60_000;
     }
 
     this._pipinsTimer = setTimeout(() => {
       if (!this._userPlaying) return;
       this._pipinsFirstFired = true;
-      if (!this._rainActive) this._playPipins();
+      // Only in day mode and without active rain
+      if (todKey() === 'day' && !this._rainActive) this._playPipins();
       this._schedulePipins();
     }, delayMs);
   }
@@ -366,7 +428,40 @@ class AmbientAudioManager {
     }
   }
 
+  // ── Internal: Window sound effects ───────────────────────────────────────
+
+  private _playEffect(urlKey: 'open' | 'close') {
+    const url = urlKey === 'open' ? WINDOW_OPEN_FILE : WINDOW_CLOSE_FILE;
+    const play = (buf: AudioBuffer) => {
+      if (!this.ctx || !this.effectsGain) return;
+      const node  = this.ctx.createBufferSource();
+      node.buffer = buf;
+      node.connect(this.effectsGain);
+      node.start(0);
+    };
+    if (this._windowBufs[urlKey]) {
+      play(this._windowBufs[urlKey]!);
+    } else {
+      this._decodeUrl(url).then(buf => {
+        this._windowBufs[urlKey] = buf;
+        play(buf);
+      }).catch(() => {});
+    }
+  }
+
   // ── Public API ────────────────────────────────────────────────────────────
+
+  /** Play the window-opening creak. Call on every open, regardless of rain/tod. */
+  playWindowOpen() {
+    this._getCtx();
+    this._playEffect('open');
+  }
+
+  /** Play the window-closing creak. Call on every close, regardless of rain/tod. */
+  playWindowClose() {
+    if (!this.ctx) return;
+    this._playEffect('close');
+  }
 
   /** Window opened — begin ambient. */
   play() {
@@ -401,10 +496,11 @@ class AmbientAudioManager {
     this._stopTracking();
     this._stopRainCheck();
 
-    if (this._rainRandomTimer) { clearTimeout(this._rainRandomTimer); this._rainRandomTimer = null; }
-    if (this._pipinsTimer)     { clearTimeout(this._pipinsTimer);     this._pipinsTimer = null; }
+    if (this._rainRandomTimer)  { clearTimeout(this._rainRandomTimer);  this._rainRandomTimer = null; }
+    if (this._pipinsTimer)      { clearTimeout(this._pipinsTimer);      this._pipinsTimer = null; }
+    if (this._rainEndCrossTimer){ clearTimeout(this._rainEndCrossTimer); this._rainEndCrossTimer = null; }
 
-    this._rampFader(0);
+    this._rampFader(0, FADE_OUT_SEC);
 
     setTimeout(() => {
       try { this.ambientNode?.stop(); } catch {}
@@ -422,7 +518,7 @@ class AmbientAudioManager {
       }
 
       onDone?.();
-    }, FADE_SEC * 1_000 + 100);
+    }, FADE_OUT_SEC * 1_000 + 100);
   }
 
   /** Window closed during rain — fade audio out without resetting the visual cycle. */
@@ -430,10 +526,11 @@ class AmbientAudioManager {
     this._userPlaying = false;
     this._stopTracking();
     this._stopRainCheck();
-    if (this._rainRandomTimer) { clearTimeout(this._rainRandomTimer); this._rainRandomTimer = null; }
-    if (this._pipinsTimer)     { clearTimeout(this._pipinsTimer);     this._pipinsTimer = null; }
+    if (this._rainRandomTimer)  { clearTimeout(this._rainRandomTimer);  this._rainRandomTimer = null; }
+    if (this._pipinsTimer)      { clearTimeout(this._pipinsTimer);      this._pipinsTimer = null; }
+    if (this._rainEndCrossTimer){ clearTimeout(this._rainEndCrossTimer); this._rainEndCrossTimer = null; }
 
-    this._rampFader(0);
+    this._rampFader(0, FADE_OUT_SEC);
 
     setTimeout(() => {
       try { this.ambientNode?.stop(); } catch {}
@@ -443,7 +540,7 @@ class AmbientAudioManager {
         this._rainActive = false;
         this._rainMutedByWindow = true;
       }
-    }, FADE_SEC * 1_000 + 100);
+    }, FADE_OUT_SEC * 1_000 + 100);
   }
 
   get isPlaying(): boolean {

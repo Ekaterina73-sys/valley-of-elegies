@@ -46,18 +46,18 @@ const PlayerContext = createContext<PlayerStore | null>(null);
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playlistsRef = useRef<{ episodes: Track[]; music: Track[]; sounds: Track[] }>({ episodes: [], music: [], sounds: [] });
+  // Snapshot of saved state — used in the one-time mount effect below
+  const savedRef = useRef({ track: null as Track | null, t: 0 });
 
   const loadSaved = (): PlayerState => {
     if (typeof window === 'undefined') return { track: null, playing: false, t: 0, volume: 0.8 };
     try {
       const saved = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
       if (saved && saved.track) {
-        return {
-          track: saved.track,
-          playing: false,
-          t: Math.max(0, Math.min(saved.t || 0, saved.track.totalSec || 0)),
-          volume: typeof saved.volume === 'number' ? saved.volume : 0.8,
-        };
+        const t = Math.max(0, Math.min(saved.t || 0, saved.track.totalSec || 0));
+        // Capture for the mount effect — state hasn't initialised yet at this point
+        savedRef.current = { track: saved.track, t };
+        return { track: saved.track, playing: false, t, volume: typeof saved.volume === 'number' ? saved.volume : 0.8 };
       }
     } catch (_) {}
     return { track: null, playing: false, t: 0, volume: 0.8 };
@@ -112,6 +112,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       audio.removeEventListener('loadedmetadata', onLoadedMetadata);
     };
   }, [persist]);
+
+  // On mount: restore audio src/position from saved localStorage state so
+  // the play button works immediately after a page reload.
+  useEffect(() => {
+    const audio = audioRef.current;
+    const { track, t } = savedRef.current;
+    if (!audio || !track?.audioFile) return;
+    audio.src = track.audioFile;
+    audio.currentTime = t;
+    audio.preload = 'metadata';
+  }, []); // intentionally empty — runs once on mount only
 
   // Ref для актуальной громкости — нужен в замыкании подписки soundStore
   const volumeRef = useRef(state.volume);
@@ -182,7 +193,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         persist(next);
         return next;
       } else {
-        if (audio && prev.track.audioFile) audio.play().catch(() => {});
+        if (audio && prev.track.audioFile) {
+          // Defensive: after a reload the audio element is blank — restore src before playing
+          if (!audio.currentSrc) {
+            audio.src = prev.track.audioFile;
+            audio.currentTime = prev.t;
+          }
+          audio.play().catch(() => {});
+        }
         const next = { ...prev, playing: true };
         persist(next);
         return next;

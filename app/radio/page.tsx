@@ -2,6 +2,8 @@ import EpisodeList from '@/components/EpisodeList';
 import { getAllEpisodes, getAllTracks } from '@/lib/content';
 import styles from './radio.module.css';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Радио · Долина Элегий',
   description: 'Архив радиовыпусков из Долины Элегий. Слушайте истории о мышах, которые живут размеренной жизнью.',

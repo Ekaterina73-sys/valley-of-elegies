@@ -13,7 +13,7 @@ const PageTransitionLoader = dynamic(() => import('./PageTransitionLoader'), { s
 
 export default function ClientShell({ children }: { children: React.ReactNode }) {
   const [soundOn, setSoundOn] = useState(true);
-  const [vol, setVol] = useState(35);
+  const [vol, setVol] = useState(75);
 
   // Синхронизируем состояние тумблера → мастер-громкость
   useEffect(() => {

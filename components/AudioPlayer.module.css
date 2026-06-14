@@ -1,7 +1,7 @@
 .compact {
   --_fg: var(--paper);
   --_muted: color-mix(in oklab, var(--paper) 52%, transparent);
-  --scrub-track: color-mix(in oklab, var(--paper) 32%, transparent);
+  --scrub-track: oklch(from var(--paper) l c h / 0.3);
 
   display: flex;
   align-items: center;
@@ -21,7 +21,7 @@
 :global(html.tod-night) .compact {
   --_fg: var(--paper-deep);
   --_muted: color-mix(in oklab, var(--paper-deep) 50%, transparent);
-  --scrub-track: color-mix(in oklab, var(--ink) 28%, transparent);
+  --scrub-track: oklch(from var(--paper-deep) l c h / 0.35);
   border-color: color-mix(in oklab, var(--warm-deep) 52%, transparent);
   box-shadow: 0 4px 20px -6px rgba(0, 0, 0, 0.3);
 }

@@ -32,6 +32,8 @@ export default function Window({ className }: WindowProps) {
 
   /** true после первого клика пользователя — не запускаем аудио из localStorage */
   const interactedRef = useRef(false);
+  /** true во время восстановления open-состояния после навигации — блокирует повторный play() */
+  const restoringRef = useRef(false);
   /** Актуальное ajar для event-listener без stale closure */
   const ajarRef = useRef(false);
   /** true когда дождь идёт — для чтения в ajar-эффекте без stale closure */
@@ -51,12 +53,33 @@ export default function Window({ className }: WindowProps) {
   useEffect(() => { ajarRef.current = ajar; }, [ajar]);
   useEffect(() => { rainActiveRef.current = rainElapsed >= 0; }, [rainElapsed]);
 
+  // Восстанавливаем визуальное состояние окна после навигации:
+  // если аудио уже играет (синглтон жив) — показываем окно открытым без лишних вызовов.
+  useEffect(() => {
+    if (ambientAudio.isPlaying) {
+      restoringRef.current = true; // блокирует audio-вызов в следующем срабатывании ajar-эффекта
+      interactedRef.current = true;
+      ajarRef.current = true;
+      setAjar(true);
+    }
+    return () => { restoringRef.current = false; };
+  }, []);
+
   // Управляем амбиентным аудио при изменении ajar
   useEffect(() => {
     if (!interactedRef.current) return;
+    if (restoringRef.current) {
+      // Только восстанавливаем визуал — аудио уже играет, ничего не трогаем.
+      // Сбрасываем флаг только когда ajar=true: первый запуск эффекта при ajar=false
+      // (начальное состояние до setState) не должен его поглощать.
+      if (ajar) restoringRef.current = false;
+      return;
+    }
     if (ajar) {
+      ambientAudio.playWindowOpen();
       ambientAudio.play();
     } else {
+      ambientAudio.playWindowClose();
       if (rainActiveRef.current) {
         ambientAudio.muteForWindow(); // только звук, визуал продолжает цикл
       } else {

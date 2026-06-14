@@ -4,7 +4,7 @@ role: САДОВНИК
 occupation: Садовник по призванию
 quote: Поглядим.
 order: 4
-published: true
+published: false
 image: /images/characters/Billy.webp
 imagePreview: /images/characters/Billy-preview.webp
 ---

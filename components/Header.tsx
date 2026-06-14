@@ -38,7 +38,12 @@ export default function Header() {
         </div>
 
         <div className={styles.navMid}>
-          <Link href="/" className={styles.brand} aria-label="Долина Элегий — на главную">
+          <Link
+            href="/"
+            className={styles.brand}
+            aria-label="Долина Элегий — на главную"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
             Долина Элегий
             <span
               className={styles.brandSpark}

@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/characters/pipins.md",
+                "file": "content/world/pond.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "pipins"
+              "title": "pond"
             }
           }
         ]
@@ -182,16 +182,17 @@
   },
   "active": "a1e393d81474d892",
   "lastOpenFiles": [
-    "content/characters/puffington.md",
-    "content/characters/archie.md",
-    "content/characters/billy.md",
-    "content/characters/pipins.md",
     "content/world/violin.md",
     "content/world/silence-festival.md",
     "content/world/pond.md",
-    "content/world/pie.md",
     "content/world/oak.md",
     "content/world/morning-birds.md",
+    "content/radio/ep002.md",
+    "content/characters/billy.md",
+    "content/characters/pipins.md",
+    "content/characters/puffington.md",
+    "content/characters/archie.md",
+    "content/world/pie.md",
     "public/audio/sounds/Rain.mp3",
     "public/audio/sounds/Ambient-day.mp3",
     "public/images/world/Ambient-day.mp3",
@@ -212,7 +213,6 @@
     "public/audio/evangeline/ev01.mp3",
     "public/audio/evangeline/Дыхание.mp3",
     "public/audio/evangeline",
-    "content/radio/ep002.md",
     "content/radio/ep001.md",
     "public/vercel.svg",
     "content/radio/Без названия.md",
