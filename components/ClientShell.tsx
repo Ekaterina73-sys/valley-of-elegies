@@ -7,8 +7,9 @@ import StickyPlayer from './StickyPlayer';
 import SoundControl from './SoundControl';
 import { soundStore } from '@/lib/soundStore';
 
-// Только клиент, без SSR — загрузчик нужен исключительно в браузере
-const LoaderSpark = dynamic(() => import('./LoaderSpark'), { ssr: false });
+// Только клиент, без SSR — загрузчики нужны исключительно в браузере
+const LoaderSpark          = dynamic(() => import('./LoaderSpark'),          { ssr: false });
+const PageTransitionLoader = dynamic(() => import('./PageTransitionLoader'), { ssr: false });
 
 export default function ClientShell({ children }: { children: React.ReactNode }) {
   const [soundOn, setSoundOn] = useState(true);
@@ -26,6 +27,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
   return (
     <PlayerProvider>
       <LoaderSpark />
+      <PageTransitionLoader />
       {children}
       <StickyPlayer />
       <SoundControl

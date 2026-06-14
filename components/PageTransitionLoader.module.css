@@ -1,0 +1,38 @@
+/* Загрузочный экран переходов между страницами — намеренно проще начального LoaderSpark */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8999;
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.4s ease-out;
+}
+
+.fading {
+  opacity: 0;
+}
+
+/* Медленное вращение ✦ — визуально отличается от эффекта сияния при первой загрузке */
+.star {
+  color: #C4A44A;
+  font-size: 2rem;
+  font-family: var(--ff-display, 'Cormorant Garamond', Georgia, serif);
+  font-weight: 400;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  text-shadow:
+    0 0 14px rgba(196, 164, 74, 0.5),
+    0 0 30px rgba(196, 164, 74, 0.2);
+  animation: kbPageSpin 4s linear infinite;
+}
+
+@keyframes kbPageSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

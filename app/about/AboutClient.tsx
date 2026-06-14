@@ -131,7 +131,7 @@ export default function AboutClient() {
                 </form>
                 <p className={styles.consent}>
                   Нажимая «Подписаться», вы соглашаетесь на{' '}
-                  <a href="#">обработку персональных данных</a>
+                  <a href="/privacy">обработку персональных данных</a>
                   {' '}и получение писем из Долины.
                 </p>
               </>
