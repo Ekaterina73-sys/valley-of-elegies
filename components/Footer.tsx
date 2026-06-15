@@ -28,7 +28,7 @@ export default function Footer() {
           <ul>
             <li><a href="https://podcasts.apple.com/us/podcast/радио-долины-элегий/id1896918738" target="_blank" rel="noopener noreferrer" className={styles.linkBtn}>Apple Podcasts</a></li>
             <li><a href="https://open.spotify.com/show/033xbQONziyXaLnOms1gLw" target="_blank" rel="noopener noreferrer" className={styles.linkBtn}>Spotify</a></li>
-            <li><span className={styles.linkBtn} style={{ opacity: 0.45, cursor: 'default' }}>Яндекс Музыка</span></li>
+            <li><a href="https://music.yandex.ru/album/42623126" target="_blank" rel="noopener noreferrer" className={styles.linkBtn}>Яндекс Музыка</a></li>
             <li><a href="https://valleyofelegies.mave.digital/" target="_blank" rel="noopener noreferrer" className={styles.linkBtn}>Все платформы →</a></li>
           </ul>
         </div>

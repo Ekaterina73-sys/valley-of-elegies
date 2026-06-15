@@ -169,7 +169,7 @@ export default function AboutClient() {
             <span className={styles.nm}>Spotify</span>
             <span className={styles.ar}>→</span>
           </a>
-          <a className={styles.plat} href="#" onClick={e => e.preventDefault()} aria-disabled="true">
+          <a className={styles.plat} href="https://music.yandex.ru/album/42623126" target="_blank" rel="noopener noreferrer">
             <span className={styles.ic}>
               <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <circle cx="12" cy="12" r="9.3"></circle>

@@ -7,8 +7,8 @@ import StickyPlayer from './StickyPlayer';
 import SoundControl from './SoundControl';
 import { soundStore } from '@/lib/soundStore';
 
-// Только клиент, без SSR — загрузчики нужны исключительно в браузере
-const LoaderSpark          = dynamic(() => import('./LoaderSpark'),          { ssr: false });
+// LoaderSpark рендерится на сервере — overlay есть в HTML с первого байта
+const LoaderSpark          = dynamic(() => import('./LoaderSpark'));
 const PageTransitionLoader = dynamic(() => import('./PageTransitionLoader'), { ssr: false });
 
 export default function ClientShell({ children }: { children: React.ReactNode }) {
