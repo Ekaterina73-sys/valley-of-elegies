@@ -62,6 +62,27 @@ export default function Window({ className }: WindowProps) {
       ajarRef.current = true;
       setAjar(true);
     }
+
+    // Восстанавливаем визуал дождя если дождь идёт — компонент размонтировался при навигации,
+    // но аудио продолжало играть в синглтоне. Перезапускаем таймер с текущей позиции файла.
+    if (ambientAudio.rainActive) {
+      const t0 = ambientAudio.rainCurrentTime;
+      const startMs = Date.now() - t0 * 1000;
+      setRainKey(k => k + 1);
+      setRainElapsed(t0);
+      if (rainTimerRef.current) clearInterval(rainTimerRef.current);
+      rainTimerRef.current = setInterval(() => {
+        const t = (Date.now() - startMs) / 1000;
+        if (t >= 435) {
+          clearInterval(rainTimerRef.current!);
+          rainTimerRef.current = null;
+          setRainElapsed(-1);
+        } else {
+          setRainElapsed(t);
+        }
+      }, 250);
+    }
+
     return () => { restoringRef.current = false; };
   }, []);
 

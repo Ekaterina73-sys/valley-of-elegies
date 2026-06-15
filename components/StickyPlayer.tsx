@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import Link from 'next/link';
 import { usePlayer } from './PlayerStore';
 import { fmtSec } from '@/lib/utils';
 import styles from './StickyPlayer.module.css';
@@ -119,11 +118,6 @@ export default function StickyPlayer() {
       </div>
 
       <div className={styles.actions}>
-        {tr?.kind === 'episode' && (
-          <Link href="/radio" className={styles.openBtn}>
-            открыть выпуск →
-          </Link>
-        )}
         <div className={`${styles.volWrap} ${volOpen ? styles.volWrapOpen : ''}`} ref={volRef}>
           <button className={styles.iconBtn} aria-label="Громкость" onClick={() => setVolOpen(o => !o)}>
             <svg width="18" height="18" viewBox="0 0 20 20">

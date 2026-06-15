@@ -314,12 +314,18 @@
   color: var(--warm-deep);
   opacity: 0;
   pointer-events: none;
-  animation: hintIn 1s ease-out 1.4s forwards;
+  animation:
+    hintIn   1s    ease-out    1.4s forwards,
+    hintPulse 4s   ease-in-out 2.4s infinite;
 }
 .hintHidden { opacity: 0 !important; animation: none; }
 @keyframes hintIn {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 0.72; transform: translateY(0); }
+}
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.72; }
+  50%      { opacity: 0.32; }
 }
 
 /* Мобилка: нет ховера — окно «дышит», намекая на интерактивность */

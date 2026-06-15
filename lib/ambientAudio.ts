@@ -546,6 +546,14 @@ class AmbientAudioManager {
   get isPlaying(): boolean {
     return this._userPlaying;
   }
+
+  get rainActive(): boolean {
+    return this._rainActive;
+  }
+
+  get rainCurrentTime(): number {
+    return this.rainEl?.currentTime ?? 0;
+  }
 }
 
 export const ambientAudio = new AmbientAudioManager();
