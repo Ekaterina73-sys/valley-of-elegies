@@ -75,6 +75,8 @@
   color: var(--warm-deep);
   display: inline;
   transition: color 0.45s ease;
+  /* Наклон курсива выходит за край inline-бокса и обрезается body overflow-x:hidden */
+  padding-right: 0.12em;
 }
 
 /* Для анимации появления (translateY работает только на блочных/inline-block) */
