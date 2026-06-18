@@ -11,6 +11,14 @@
 }
 
 @font-face {
+  font-family: 'Bogart';
+  src: url('/fonts/Bogart-Bold-Italic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'Marianna';
   src: url('/fonts/Marianna.ttf') format('truetype');
   font-weight: normal;
