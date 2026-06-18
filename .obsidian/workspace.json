@@ -11,12 +11,14 @@
             "id": "a1e393d81474d892",
             "type": "leaf",
             "state": {
-              "type": "audio",
+              "type": "markdown",
               "state": {
-                "file": "public/audio/sounds/Closing-window.mp3"
+                "file": "content/characters/billy.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-file-audio",
-              "title": "Closing-window"
+              "icon": "lucide-file",
+              "title": "billy"
             }
           }
         ]
@@ -180,6 +182,7 @@
   },
   "active": "a1e393d81474d892",
   "lastOpenFiles": [
+    "public/audio/sounds/Closing-window.mp3",
     "public/audio/sounds/Opening-window.mp3",
     "public/audio/sounds/Pippins.mp3",
     "public/audio/sounds/Rain.mp3",
@@ -210,7 +213,6 @@
     "public/images/characters",
     "content/evangeline/ev002.md",
     "public/audio/evangeline/ev02.mp3",
-    "public/audio/evangeline/At One.mp3",
     "content/evangeline/ev001.md",
     "content/radio/ep001.md",
     "public/vercel.svg",

@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir -p \"/Users/ekaterina/Desktop/Долина Элегий/Сайт/.claude\")"
+      "Bash(mkdir -p \"/Users/ekaterina/Desktop/Долина Элегий/Сайт/.claude\")",
+      "WebSearch"
     ]
   }
 }
