@@ -13,6 +13,7 @@ import Footer from '@/components/Footer';
 import GrainOverlay from '@/components/GrainOverlay';
 import TimeOfDay from '@/components/TimeOfDay';
 import ClientShell from '@/components/ClientShell';
+import { Analytics } from '@vercel/analytics/next';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['cyrillic', 'latin'],
@@ -113,6 +114,7 @@ export default function RootLayout({
           <main>{children}</main>
           <Footer />
         </ClientShell>
+        <Analytics />
       </body>
     </html>
   );
