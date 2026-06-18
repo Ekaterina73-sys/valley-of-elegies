@@ -100,7 +100,8 @@ export default function LoaderSpark() {
 
   return (
     <div
-      className={`${styles.overlay}${fading ? ` ${styles.overlayFading}` : ''}`}
+      className={fading ? styles.overlayFading : undefined}
+      style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'var(--paper)', pointerEvents: 'none' }}
       aria-hidden="true"
     >
       <span ref={sparkRef} className={styles.spark} aria-hidden="true">✦</span>

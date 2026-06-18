@@ -71,7 +71,8 @@ class AmbientAudioManager {
   private effectsGain:  GainNode     | null = null; // for window open/close sounds (bypasses streetFader)
   private ambientNode:  AudioBufferSourceNode | null = null;
   private ambientBufs:  Partial<Record<'day' | 'night', AudioBuffer>> = {};
-  private _windowBufs:  Partial<Record<'open' | 'close', AudioBuffer>> = {};
+  private _windowBufs:    Partial<Record<'open' | 'close', AudioBuffer>> = {};
+  private _windowPending: Partial<Record<'open' | 'close', true>>       = {};
 
   // Rain
   private rainEl:    HTMLAudioElement            | null = null;
@@ -441,12 +442,16 @@ class AmbientAudioManager {
     };
     if (this._windowBufs[urlKey]) {
       play(this._windowBufs[urlKey]!);
-    } else {
-      this._decodeUrl(url).then(buf => {
-        this._windowBufs[urlKey] = buf;
-        play(buf);
-      }).catch(() => {});
+      return;
     }
+    // Если уже грузится — не запускаем второй fetch (иначе звук сыграет несколько раз)
+    if (this._windowPending[urlKey]) return;
+    this._windowPending[urlKey] = true;
+    this._decodeUrl(url).then(buf => {
+      this._windowBufs[urlKey] = buf;
+      delete this._windowPending[urlKey];
+      play(buf);
+    }).catch(() => { delete this._windowPending[urlKey]; });
   }
 
   // ── Public API ────────────────────────────────────────────────────────────

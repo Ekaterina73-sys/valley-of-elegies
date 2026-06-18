@@ -11,14 +11,12 @@
             "id": "a1e393d81474d892",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "audio",
               "state": {
-                "file": "content/world/pond.md",
-                "mode": "source",
-                "source": false
+                "file": "public/audio/sounds/Closing-window.mp3"
               },
-              "icon": "lucide-file",
-              "title": "pond"
+              "icon": "lucide-file-audio",
+              "title": "Closing-window"
             }
           }
         ]
@@ -182,9 +180,14 @@
   },
   "active": "a1e393d81474d892",
   "lastOpenFiles": [
+    "public/audio/sounds/Opening-window.mp3",
+    "public/audio/sounds/Pippins.mp3",
+    "public/audio/sounds/Rain.mp3",
+    "public/audio/Ambient-day.mp3",
+    "public/audio/Ambient-night.mp3",
+    "content/world/pond.md",
     "content/world/violin.md",
     "content/world/silence-festival.md",
-    "content/world/pond.md",
     "content/world/oak.md",
     "content/world/morning-birds.md",
     "content/radio/ep002.md",
@@ -193,7 +196,6 @@
     "content/characters/puffington.md",
     "content/characters/archie.md",
     "content/world/pie.md",
-    "public/audio/sounds/Rain.mp3",
     "public/audio/sounds/Ambient-day.mp3",
     "public/images/world/Ambient-day.mp3",
     "public/images/world/Pippins workshop.webp",
@@ -210,9 +212,6 @@
     "public/audio/evangeline/ev02.mp3",
     "public/audio/evangeline/At One.mp3",
     "content/evangeline/ev001.md",
-    "public/audio/evangeline/ev01.mp3",
-    "public/audio/evangeline/Дыхание.mp3",
-    "public/audio/evangeline",
     "content/radio/ep001.md",
     "public/vercel.svg",
     "content/radio/Без названия.md",

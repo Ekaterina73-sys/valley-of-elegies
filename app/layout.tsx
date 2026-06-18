@@ -60,9 +60,26 @@ const homemadeApple = Homemade_Apple({
   display: 'swap',
 });
 
+const TITLE       = 'Долина элегий — радио, истории и музыка';
+const DESCRIPTION = 'Маленькая деревушка мышей, где обычная жизнь оказывается чудом, стоит лишь прислушаться.';
+
 export const metadata: Metadata = {
-  title: 'Долина элегий',
-  description: 'Тихое место, где живут мыши: пекут пироги, навещают друг друга без повода и подолгу смотрят на закат.',
+  metadataBase: new URL('https://valleyofelegies.com'),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    type:        'website',
+    url:         'https://valleyofelegies.com',
+    title:       TITLE,
+    description: DESCRIPTION,
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: TITLE }],
+  },
+  twitter: {
+    card:        'summary_large_image',
+    title:       TITLE,
+    description: DESCRIPTION,
+    images:      ['/og-image.jpg'],
+  },
 };
 
 export default function RootLayout({
@@ -82,6 +99,9 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${fontClasses} font-classical`}>
       <head>
+        {/* Предзагрузка звуков окна — к первому клику файлы уже в кэше */}
+        <link rel="preload" href="/audio/sounds/Opening-window.mp3" as="audio" type="audio/mpeg" />
+        <link rel="preload" href="/audio/sounds/Closing-window.mp3" as="audio" type="audio/mpeg" />
         {/* Без JavaScript [data-intro] элементы всегда видны */}
         <noscript><style>{`[data-intro],[data-letter]{opacity:1!important}`}</style></noscript>
       </head>

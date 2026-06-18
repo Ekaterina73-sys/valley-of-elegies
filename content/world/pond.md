@@ -1,8 +1,8 @@
 ---
 title: Пруд в дождливый день
 type: sound
-featured: true
-published: true
+featured: false
+published: false
 audio: /audio/sounds/Rain.mp3
 subtitle: Чудесная погода
 ---
