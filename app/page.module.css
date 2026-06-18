@@ -75,8 +75,9 @@
   color: var(--warm-deep);
   display: inline;
   transition: color 0.45s ease;
-  /* Наклон курсива выходит за край inline-бокса и обрезается body overflow-x:hidden */
-  padding-right: 0.12em;
+  /* Наклон курсива выходит за край inline-бокса и обрезается body overflow-x:hidden.
+     На iOS Safari синтетический курсив шире, чем в Chrome — берём запас 0.5em. */
+  padding-right: 0.5em;
 }
 
 /* Для анимации появления (translateY работает только на блочных/inline-block) */
