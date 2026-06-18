@@ -9,6 +9,7 @@
     "optimize-images": "node scripts/optimize-images.js"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "gray-matter": "^4.0.3",
     "music-metadata": "^11.12.3",
     "next": "16.2.7",
