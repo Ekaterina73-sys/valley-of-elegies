@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { getLatestEpisode } from '@/lib/content';
 
-export const dynamic = 'force-dynamic';
 import Window from '@/components/Window';
 import AudioPlayer from '@/components/AudioPlayer';
 import HomeTOC from '@/components/HomeTOC';

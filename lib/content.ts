@@ -140,7 +140,7 @@ function rssDate(pubDate: string): string {
 }
 
 async function fetchRSSEpisodes(): Promise<RadioEpisode[]> {
-  const res = await fetch(MAVE_RSS, { cache: 'no-store' });
+  const res = await fetch(MAVE_RSS, { cache: 'force-cache' });
   if (!res.ok) throw new Error(`RSS ${res.status}`);
   const xml = await res.text();
 
