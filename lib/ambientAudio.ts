@@ -71,6 +71,7 @@ class AmbientAudioManager {
   private effectsGain:  GainNode     | null = null; // for window open/close sounds (bypasses streetFader)
   private ambientNode:  AudioBufferSourceNode | null = null;
   private ambientBufs:  Partial<Record<'day' | 'night', AudioBuffer>> = {};
+  private _ambientPrewarming = false;  // идёт фоновая предзагрузка амбиента
   private _windowBufs:    Partial<Record<'open' | 'close', AudioBuffer>> = {};
   private _windowPending: Partial<Record<'open' | 'close', true>>       = {};
 
@@ -470,6 +471,20 @@ class AmbientAudioManager {
   playWindowClose() {
     if (!this.ctx) return;
     this._playEffect('close');
+  }
+
+  /**
+   * Тихо подгружает и декодирует амбиент текущего времени суток — без звука.
+   * Вызывается при первом действии пользователя, чтобы к клику по окну
+   * ~7 МБ амбиента уже лежали в буфере и фейд стартовал мгновенно.
+   */
+  prewarm() {
+    const tod = todKey();
+    if (this.ambientBufs[tod] || this._ambientPrewarming) return;
+    this._ambientPrewarming = true;
+    this._decodeUrl(AMBIENT_FILES[tod])
+      .then(buf => { this.ambientBufs[tod] = buf; this._ambientPrewarming = false; })
+      .catch(() => { this._ambientPrewarming = false; });
   }
 
   /** Window opened — begin ambient. */

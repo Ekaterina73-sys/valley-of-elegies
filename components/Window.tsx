@@ -53,6 +53,18 @@ export default function Window({ className }: WindowProps) {
   useEffect(() => { ajarRef.current = ajar; }, [ajar]);
   useEffect(() => { rainActiveRef.current = rainElapsed >= 0; }, [rainElapsed]);
 
+  // Тихо прогреваем амбиент при первом действии на главной — чтобы к клику
+  // по окну ~7 МБ звука уже были загружены и фейд начался сразу, без паузы.
+  useEffect(() => {
+    const events = ['pointerdown', 'touchstart', 'keydown', 'mousemove', 'scroll', 'wheel'] as const;
+    const warm = () => {
+      ambientAudio.prewarm();
+      events.forEach(e => window.removeEventListener(e, warm));
+    };
+    events.forEach(e => window.addEventListener(e, warm, { passive: true }));
+    return () => events.forEach(e => window.removeEventListener(e, warm));
+  }, []);
+
   // Восстанавливаем визуальное состояние окна после навигации:
   // если аудио уже играет (синглтон жив) — показываем окно открытым без лишних вызовов.
   useEffect(() => {
