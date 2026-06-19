@@ -162,6 +162,10 @@ class AmbientAudioManager {
       node.connect(this.ambientFader ?? fader);
       node.start(0);
       this.ambientNode = node;
+      // Фейд-ин запускаем ровно здесь — в момент реального старта звука.
+      // Файл амбиента ~7 МБ и грузится 1-2 с; если рампить заранее (в play()),
+      // рампа «проезжает» до старта и фейд не слышен.
+      this._rampFader(this._targetGain(), FADE_IN_SEC);
     };
 
     if (this.ambientBufs[tod]) {
@@ -473,7 +477,7 @@ class AmbientAudioManager {
     this._userPlaying = true;
     this._getCtx();
 
-    this._rampFader(this._targetGain());
+    // Фейд-ин теперь внутри _startAmbient (ровно в момент старта звука).
     this._startAmbient();
 
     if (this._rainMutedByWindow && this.rainEl && !this.rainEl.ended) {

@@ -85,8 +85,10 @@
   /* filter: долгое проявление из тумана; задержка — сначала рамка, потом пейзаж */
   transition: opacity 1.4s ease, filter 2.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
 }
-.sceneDay { background-image: var(--scene-day); opacity: 1; }
-.sceneNight { background-image: var(--scene-night); opacity: 0; }
+/* background-color — мягкая подложка, видна пока картинка пейзажа грузится по сети
+   (вместо тёмного #14110c у .opening — чтобы не было чёрного мига) */
+.sceneDay { background-color: #c8bd93; background-image: var(--scene-day); opacity: 1; }
+.sceneNight { background-color: #1b2640; background-image: var(--scene-night); opacity: 0; }
 :global(html.tod-night) .sceneDay   { opacity: 0; }
 :global(html.tod-night) .sceneNight { opacity: 1; }
 

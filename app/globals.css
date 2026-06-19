@@ -27,6 +27,9 @@
 }
 
 :root {
+  /* Бумажная текстура — задаём в CSS, чтобы была с первого кадра.
+     Раньше ставилась через JS (GrainOverlay) после гидрации → наползала с задержкой. */
+  --kb-grain:    url("/images/grain-paper.png");
   --paper:       #f5ead0;
   --paper-deep:  #ebdcb8;
   --ink:         #2e2a1e;
