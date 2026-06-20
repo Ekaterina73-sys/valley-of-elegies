@@ -13,6 +13,7 @@ import Footer from '@/components/Footer';
 import GrainOverlay from '@/components/GrainOverlay';
 import TimeOfDay from '@/components/TimeOfDay';
 import ClientShell from '@/components/ClientShell';
+import YandexMetrika from '@/components/YandexMetrika';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['cyrillic', 'latin'],
@@ -99,6 +100,12 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${fontClasses} font-classical`}>
       <head>
+        {/* Яндекс.Метрика — счётчик 110015216 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=110015216','ym');ym(110015216,'init',{ssr:true,webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});`,
+          }}
+        />
         {/* Предзагрузка звуков окна — к первому клику файлы уже в кэше */}
         <link rel="preload" href="/audio/sounds/Opening-window.mp3" as="audio" type="audio/mpeg" />
         <link rel="preload" href="/audio/sounds/Closing-window.mp3" as="audio" type="audio/mpeg" />
@@ -106,6 +113,11 @@ export default function RootLayout({
         <noscript><style>{`[data-intro],[data-letter]{opacity:1!important}`}</style></noscript>
       </head>
       <body>
+        {/* Яндекс.Метрика: пиксель для случая без JS + отслеживание SPA-переходов */}
+        <noscript>
+          <div><img src="https://mc.yandex.ru/watch/110015216" style={{ position: 'absolute', left: '-9999px' }} alt="" /></div>
+        </noscript>
+        <YandexMetrika />
         <TimeOfDay />
         <GrainOverlay />
         <ClientShell>
