@@ -122,29 +122,9 @@ export default function VinylCollection({ tracks: rawTracks }: { tracks: Evangel
               </div>
             );
           })}
-
-          {/* Placeholder "Coming soon" record */}
-          <div className={styles.recordBlur}>
-            <div className={styles.blurDisc}>
-              <div className={styles.discFake} aria-hidden="true" />
-              <div className={styles.soonVeil} aria-hidden="true" />
-              <div className={styles.soonBadge}>
-                <svg className={styles.soonLock} width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <rect x="4.5" y="10.5" width="15" height="10.5" rx="2.2" fill="currentColor" opacity="0.95"/>
-                  <path d="M7.5 10.5V7.5a4.5 4.5 0 0 1 9 0v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
-                  <circle cx="12" cy="15.4" r="1.5" fill="#1c1610"/>
-                  <rect x="11.25" y="15.4" width="1.5" height="3" rx="0.75" fill="#1c1610"/>
-                </svg>
-                <span className={styles.soonText}>Скоро</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
-      <div className={styles.announcement}>
-        Следующая запись — лето MMXXVI
-      </div>
     </section>
   );
 }
