@@ -7,6 +7,7 @@ import {
   Spectral,
   Homemade_Apple,
 } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -125,6 +126,7 @@ export default function RootLayout({
           <main>{children}</main>
           <Footer />
         </ClientShell>
+        <Analytics />
       </body>
     </html>
   );
